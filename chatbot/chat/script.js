@@ -312,7 +312,7 @@ $(window).on('keydown', function (e) {
 // Function to send message to the server
 function sendMessageToServer(message) {
   $.ajax({
-    url: 'http://localhost:3000/api/chat',
+    url: 'https://server-floatbin.onrender.com/api/chat',
     method: 'POST',
     contentType: 'application/json',
     data: JSON.stringify({ message: message }),
