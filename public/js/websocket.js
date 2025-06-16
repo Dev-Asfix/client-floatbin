@@ -1,5 +1,5 @@
 // js/websocket.js
-const WS_URL = "ws://https://server-floatbin.onrender.com/"; // URL del servidor WebSocket
+const WS_URL = "wss://server-floatbin.onrender.com"; // URL del servidor WebSocket
 
 let socket; // Declarar socket aquí para que sea accesible
 
