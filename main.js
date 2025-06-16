@@ -361,7 +361,7 @@ const Restaurants = () => {
     }, {
       desc: "Monitoreo de residuos",
       id: 3,
-      image: "./images/tacho1.png",
+      image: "./images/tachito.png",
       title: "Estados",
       link: "#control",
     }, {
