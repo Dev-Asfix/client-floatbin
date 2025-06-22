@@ -1,33 +1,45 @@
-// js/main.js
 import { connectWebSocket } from './websocket.js';
-import { updatePredictionDisplay, updateSensorData, updateTrashCanVisual, displayRecommendation, animateAudioIcon } from './ui.js';
-import { estadoActual, registerState, calculateAverageFillTime, getRecommendationMessage } from './state.js';
-import { initializeAudio, playSequentialAudios, stopAudio, isAudioPlaying } from './audio.js';
+import {
+    updatePredictionDisplay,
+    updateSensorData,
+    updateTrashCanVisual,
+    displayRecommendation,
+    animateAudioIcon
+} from './ui.js';
+import {
+    registerState,
+    fullTimes,
+    calculateAdaptiveAverage,
+    getSmartRecommendation
+} from './state.js';
+import {
+    initializeAudio,
+    playSequentialAudios,
+    stopAudio,
+    isAudioPlaying
+} from './audio.js';
 
-// Inicializar el audio player y el contenedor al cargar el DOM
+// Inicializa el reproductor y la animación del ícono
 document.addEventListener('DOMContentLoaded', () => {
     initializeAudio();
-    animateAudioIcon(); // Iniciar la animación del ícono de audio
+    animateAudioIcon();
 });
 
+// Lógica principal al recibir datos del WebSocket
 const handleWebSocketMessage = (data) => {
-    // Lógica para la actualización de datos del sensor
+    // Actualiza los datos visibles
     updateSensorData(data);
     updateTrashCanVisual(data.estado);
-    registerState(data.estado, data.timestamp); // Registra el estado para la tabla
+    registerState(data.estado, data.timestamp);
 
-    // El backend ya calcula y envía 'averageFillTime'.
-    // Pasamos este valor directamente a la función de display.
-    const averageTime = data.averageFillTime;
+    // Cálculo adaptativo desde frontend
+    const averageTime = calculateAdaptiveAverage(fullTimes);
 
-    // La función 'updatePredictionDisplay' en ui.js es la que decide qué mensaje mostrar
-    // en la sección de "predicciones" basado en si 'averageTime' es > 0 o no.
+    // Actualiza predicción y recomendación
     updatePredictionDisplay(averageTime);
+    displayRecommendation(getSmartRecommendation(fullTimes));
 
-    // Muestra la recomendación basada en el promedio.
-    displayRecommendation(getRecommendationMessage(averageTime));
-
-    // Lógica para reproducir/detener audio
+    // Control del audio según el estado
     if (data.estado === "Lleno" && !isAudioPlaying()) {
         playSequentialAudios(data.estado);
     } else if (data.estado !== "Lleno" && isAudioPlaying()) {
@@ -35,9 +47,9 @@ const handleWebSocketMessage = (data) => {
     }
 };
 
-// Conectar el WebSocket al cargar la página
+// Conexión al WebSocket
 connectWebSocket(
     handleWebSocketMessage,
-    (error) => { console.error("Error de conexión WebSocket:", error); },
-    () => { console.log("Conexión WebSocket cerrada desde main.js"); }
+    (error) => console.error("Error de conexión WebSocket:", error),
+    () => console.log("Conexión WebSocket cerrada desde main.js")
 );

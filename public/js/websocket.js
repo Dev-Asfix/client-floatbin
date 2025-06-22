@@ -1,5 +1,5 @@
 // js/websocket.js
-const WS_URL = "wss://server-floatbin.onrender.com"; // URL del servidor WebSocket
+const WS_URL = "wss://server-floatbin.onrender.com"; // URL del servidor WebSocket server-floatbin.onrender.com
 
 let socket; // Declarar socket aquí para que sea accesible
 
@@ -30,5 +30,5 @@ export const connectWebSocket = (onMessageCallback, onErrorCallback, onCloseCall
     };
 };
 
-// Puedes exportar el socket si necesitas acceder a él desde otros módulos (ej. para enviar mensajes)
+//  otros módulos (ej. para enviar mensajes)
 export const getSocket = () => socket;

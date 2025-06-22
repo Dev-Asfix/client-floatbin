@@ -1,21 +1,20 @@
 // js/ui.js
+import { formatTiempo } from './state.js'; // Import formatTiempo from state.js
+
 export const updatePredictionDisplay = (averageFillTime) => {
     const prediccionElement = document.getElementById("prediccionLlenado");
     const waterEffect = document.getElementById("waterEffect");
     const sparksEffect = document.getElementById("sparksEffect");
 
-    // Si averageFillTime es un número válido y es mayor que 0 (lo que indica que el backend ya calculó un promedio real)
     if (typeof averageFillTime === 'number' && averageFillTime > 0) {
-        applyNoBackgroundStyle(prediccionElement); // Quitamos el estilo de "cargando/espera"
-        const averageTimeSeconds = (averageFillTime / 1000).toFixed(2); // Convertir a segundos
-        prediccionElement.textContent = `Tiempo promedio de llenado: ${averageTimeSeconds} segundos`;
-        waterEffect.classList.remove("filling"); // Detener animaciones si es que estaban
-        sparksEffect.innerHTML = ""; // Eliminar chispas
+        applyNoBackgroundStyle(prediccionElement);
+        prediccionElement.textContent = `Llenado estimado en ${formatTiempo(averageFillTime)}.`;
+        waterEffect.classList.remove("filling");
+        sparksEffect.innerHTML = ""; // Clear sparks when there's data
     } else {
-        // Si averageFillTime es 0 o no es un número válido (backend aún no tiene 2 llenados para su cálculo)
-        applyBackgroundStyle(prediccionElement); // Aplicar estilo de "cargando/espera"
-        prediccionElement.textContent = `Se necesitan al menos 3 llenados para calcular el promedio.`; // Mensaje de espera
-        waterEffect.classList.add("filling"); // Activar animaciones de espera
+        applyBackgroundStyle(prediccionElement);
+        prediccionElement.textContent = `Se necesitan al menos 2 llenados para calcular el promedio.`; // Changed from 3 to 2 for consistency with calculateAdaptiveAverage
+        waterEffect.classList.add("filling");
         generateSparks(sparksEffect);
     }
 };
@@ -50,13 +49,17 @@ const generateSparks = (sparksEffect) => {
     }
 };
 
+/**
+ * Updates the sensor data display in the UI.
+ * @param {object} data - Object containing sensor data (estado, distancia, timestamp).
+ */
 export const updateSensorData = (data) => {
+    const localDate = new Date().toLocaleString(); // Use current local time for display
     document.getElementById("estado").innerText = `Estado: ${data.estado}`;
     document.getElementById("distancia").innerText = `Distancia: ${data.distancia} cm`;
-    document.getElementById("fecha").innerText = `Fecha y Hora: ${data.timestamp}`;
-    // Esta línea se actualiza directamente con lo que viene del backend, pero el display principal lo usa.
-    // La conversión a segundos se hace aquí también para la visualización del promedio.
-    document.getElementById("averageFillTime").innerText = `Promedio: ${(data.averageFillTime / 1000).toFixed(2) || "--"} segundos`;
+    document.getElementById("fecha").innerText = `Fecha y Hora: ${localDate}`; // Display local date/time
+    // Note: averageFillTime is updated by calculateAdaptiveAverage, not here directly.
+    // document.getElementById("averageFillTime").innerText = `Promedio: --`; // This line should be removed or handled by calculateAdaptiveAverage directly
 
     if (data.alert) {
         document.getElementById("alerta").innerText = data.alert;
@@ -67,23 +70,12 @@ export const updateTrashCanVisual = (estado) => {
     const nivel = document.getElementById("nivel");
     let porcentaje = 0;
     switch (estado) {
-        case "Vacio":
-            porcentaje = 0;
-            break;
-        case "Bajo":
-            porcentaje = 25;
-            break;
-        case "Medio":
-            porcentaje = 50;
-            break;
-        case "Alto":
-            porcentaje = 75;
-            break;
-        case "Lleno":
-            porcentaje = 100;
-            break;
-        default:
-            porcentaje = 0;
+        case "Vacio": porcentaje = 0; break;
+        case "Bajo": porcentaje = 25; break;
+        case "Medio": porcentaje = 50; break;
+        case "Alto": porcentaje = 75; break;
+        case "Lleno": porcentaje = 100; break;
+        default: porcentaje = 0;
     }
     nivel.style.height = `${porcentaje}%`;
 };
@@ -119,24 +111,15 @@ export const animateAudioIcon = () => {
         if (isPlaying) {
             angleX += directionX * 0.5;
             angleY += directionY * 1.5;
-
-            if (angleX > 15 || angleX < -10) {
-                directionX *= -1;
-            }
-            if (angleY > 20 || angleY < -20) {
-                directionY *= -1;
-            }
+            if (angleX > 15 || angleX < -10) directionX *= -1;
+            if (angleY > 20 || angleY < -20) directionY *= -1;
         } else {
             angleX += directionX;
             angleY += directionY;
-
-            if (angleX > 35 || angleX < -10) {
-                directionX *= -1;
-            }
-            if (angleY > 30 || angleY < -30) {
-                directionY *= -1;
-            }
+            if (angleX > 35 || angleX < -10) directionX *= -1;
+            if (angleY > 30 || angleY < -30) directionY *= -1;
         }
+
         image.style.transform = `rotateX(${angleX}deg) rotateY(${angleY}deg)`;
     }, 100);
 };
