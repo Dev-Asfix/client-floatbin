@@ -1163,7 +1163,7 @@ body::after {
         /* Sin bordes redondeados en móviles para ocupar toda la pantalla */
         height: 100vh;
         max-width: 100%;
-        max-height: 100vh;
+        max-height: 80vh;
 
         /* Sin sombra en móviles para un look más nativo */
 
