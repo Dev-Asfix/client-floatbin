@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Escaneo de Recolección de Residuos</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-routing-machine@3.2.1/dist/leaflet-routing-machine.css"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header id="mainHeader">
+        <h1>Sistema de Escaneo de Recolección de Residuos</h1>
+      </header>
+      <div id="scannerCard">
+        <div id="mapContainer">
+          <div id="realtimeMap"></div>
+        </div>
+        <div id="controls">
+          <div id="connectionStatus" class="control-group">
+            Estado de la Conexión:
+            <span class="status-indicator connected"></span>
+            <span class="status-text">Desconectado</span>
+          </div>
+          <div id="tachosLiveStatus" class="control-group">
+            <p id="noTachosMessage">No hay tachos activos detectados.</p>
+          </div>
+
+          <div id="locationControls" class="control-group">
+            <label for="userLocationInput" class="input-label"
+              >Ingresa tu ubicación (lat, lng):</label
+            >
+            <input
+              type="text"
+              id="userLocationInput"
+              placeholder="-5.0874, -81.1278"
+              class="text-input"
+            />
+            <div class="button-group">
+              <button id="setUserLocationBtn" class="action-btn">
+                Establecer Ubicación
+              </button>
+              <button id="selectOnMapBtn" class="action-btn secondary-btn">
+                Seleccionar en el Mapa
+              </button>
+            </div>
+            <p id="userLocationDisplay" class="location-info">
+              Tu Ubicación: -5.0874, -81.1278 (Paita, Perú)
+            </p>
+            <p id="locationMessage" class="info-message"></p>
+          </div>
+
+          <div class="main-actions control-group">
+            <button id="toggleScanBtn" class="action-btn primary-btn">
+              Iniciar Escaneo
+            </button>
+            <button id="generateRouteBtn" class="action-btn" disabled>
+              Generar Ruta de Recolección
+            </button>
+            <button id="toggleFullscreenBtn" class="action-btn">
+              Pantalla Completa
+            </button>
+          </div>
+        </div>
+
+        <div
+          id="collectionRegisterContainer"
+          class="route-analysis-container"
+          style="display: none"
+        >
+          <h2>Registro de Tachos por Recolectar (Prioridad)</h2>
+          <div id="collectionRegisterContent" class="analysis-table-container">
+            <p class="info-message">
+              Genera una ruta para ver el registro de recolección.
+            </p>
+          </div>
+        </div>
+        <div class="route-analysis-container" style="display: none">
+          <h2>Análisis de Ruta de Recolección</h2>
+          <div id="routeSummary" class="summary-info"></div>
+          <div id="routeAnalysisContent" class="analysis-table-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.1/dist/leaflet-routing-machine.js"></script>
+    <script src="./escaner.js" type="module"></script>
+  </body>
+</html>

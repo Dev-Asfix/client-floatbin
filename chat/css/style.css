@@ -1,0 +1,2086 @@
+/*
+ * ----------------------------------------------------
+ * 1. IMPORTACIONES Y VARIABLES GLOBALES
+ * ----------------------------------------------------
+ * Aquí definimos las fuentes que usaremos de Google Fonts y una paleta de colores vibrantes y modernos.
+ * Usar variables CSS (`--nombre-variable`) es una práctica excelente para mantener la
+ * consistencia y facilitar cambios futuros en el tema.
+ */
+
+/* Importar fuentes de Google Fonts para un look moderno y legible */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Outfit:wght@300;400;600&family=Inter:wght@300;400;600;700&family=Space+Grotesk:wght@400;500;700&family=Figtree:wght@400;600&family=Rubik:wght@300;400;500;600&display=swap');
+
+/* Definición de variables CSS para colores y efectos */
+:root {
+    /* Paleta de colores dark y "tech" */
+    --bg-dark: #121826;
+    /* Fondo principal oscuro (azul muy oscuro) */
+    --text-primary: #e0f7fa;
+    /* Texto principal (casi blanco, con un toque de cian) */
+    --text-secondary: #a7c4bc;
+    /* Texto secundario (gris claro azulado) */
+    --accent-cyan: #00bcd4;
+    /* Cian vibrante para acentos */
+    --accent-turquesa: #4dd0e1;
+    /* Turquesa luminoso, ligeramente más claro */
+    --gradient-start: #29b6f6;
+    /* Azul claro para el inicio de degradados */
+    --gradient-end: #00bcd4;
+    /* Cian para el final de degradados */
+    --blur-intensity: 12px;
+    /* Intensidad del efecto blur para un look futurista */
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    /* Sombra más pronunciada para profundidad */
+    --border-color: rgba(255, 255, 255, 0.05);
+    /* Borde muy sutil para separar elementos */
+}
+
+/* Estilos para el cuerpo de la página */
+body {
+    margin: 0;
+    background-color: #0c1521;
+    /* Fondo base muy oscuro */
+    color: #e0f2f7;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 30px;
+    box-sizing: border-box;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Pseudo-elemento para el fondo animado que cambiará las imágenes */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    opacity: 0.08;
+    /* Mantén esta opacidad para que las imágenes sean sutiles */
+    z-index: -2;
+    /* Más bajo que el nuevo overlay oscuro */
+    pointer-events: none;
+
+    animation: changeBackground 15s infinite ease-in-out;
+    transition: background-image 1s ease-in-out, opacity 1s ease-in-out;
+}
+
+/* Overlay de capa oscura con gradiente adicional para un toque más moderno y cohesivo */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* La clave: un color de fondo oscuro y semitransparente que cubre todo */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Capa negra con 40% de opacidad */
+
+    /* Agregamos los radial-gradients como una SEGUNDA CAPA de fondo en el mismo after,
+       asegurándonos de que estén por encima de background-color si usamos múltiples fondos.
+       Es importante que background-color sea el último si queremos que actúe como una base.
+       O, más fácil, si solo quieres el efecto de capa oscura, eliminas los gradientes de aquí
+       y los pones en otro pseudo-elemento, o simplemente te quedas con un `background-color` más oscuro aquí.
+    */
+    background-image: radial-gradient(circle at top left,
+            rgba(64, 224, 208, 0.03) 0%,
+            /* Turquesa/cian suave, muy tenue */
+            transparent 10%),
+        radial-gradient(circle at bottom right,
+            rgba(70, 130, 180, 0.03) 0%,
+            /* Azul acero suave, muy tenue */
+            transparent 30%);
+    background-repeat: no-repeat;
+    /* Para que los gradientes no se repitan */
+    background-size: cover;
+    /* Para que los gradientes cubran el área */
+
+
+    z-index: -1;
+    /* Lo mantiene entre el fondo de imágenes (-2) y el contenido principal (1) */
+    pointer-events: none;
+}
+
+/* Keyframes para la animación de cambio de imagen de fondo */
+@keyframes changeBackground {
+    0% {
+        background-image: url("/images/fondo1.jpg");
+        opacity: 0.5;
+    }
+
+    15% {
+        background-image: url("/images/fondo1.jpg");
+        opacity: 0.3;
+    }
+
+    25% {
+        background-image: url("/images/fondo1.jpg");
+        opacity: 0.3;
+    }
+
+    33% {
+        background-image: url("/images/fondo2.jpg");
+        opacity: 0.3;
+    }
+
+    48% {
+        background-image: url("/images/fondo2.jpg");
+        opacity: 1.3;
+    }
+
+    58% {
+        background-image: url("/images/fondo5.jpg");
+        opacity: 0.3;
+    }
+
+    73% {
+        background-image: url("/images/fondo5.jpg");
+        opacity: 0.3;
+    }
+
+    83% {
+        background-image: url("/images/fondo1.jpg");
+        opacity: 0.1;
+    }
+
+    100% {
+        background-image: url("/images/fondo1.jpg");
+        opacity: 1.3;
+    }
+}
+
+/*
+ * ----------------------------------------------------
+ * 2. CONTENEDOR PRINCIPAL DEL CHAT (`.chat-container`)
+ * ----------------------------------------------------
+ * Este es el contenedor principal de toda la interfaz del chat. Aquí definimos
+ * su tamaño, forma, y los efectos de "vidrio esmerilado" o "frosted glass".
+ */
+.chat-container {
+    display: flex;
+    /* Contenedor flex para organizar los elementos internos (header, messages, input) */
+    flex-direction: column;
+    /* Apila los elementos verticalmente */
+    height: 90vh;
+    /* Ocupa la mayor parte de la altura de la ventana */
+    max-height: 800px;
+    /* Limita la altura máxima para pantallas muy grandes */
+    width: 100%;
+    max-width: 450px;
+    /* Ancho máximo para una experiencia de chat cómoda */
+    margin: auto;
+    /* ¡MODIFICADO! Centra tanto vertical como horizontalmente dentro del contenedor flex padre */
+    /* El margen vertical anterior (0.5vh auto) se elimina porque el 'auto' ya maneja ambos */
+    border-radius: 25px;
+    /* Bordes generosamente redondeados */
+    background-color: rgba(86, 171, 252, 0.075);
+    /* Fondo oscuro semi-transparente del contenedor */
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.45),
+        0 35px 70px rgba(0, 0, 0, 0.25),
+        0 5px 15px rgba(0, 150, 255, 0.25),
+        inset 0 1px 3px rgba(255, 255, 255, 0.05);
+
+    transform: translateY(-4px);
+
+
+    /* Sombra marcada para un efecto flotante */
+    overflow: hidden;
+    /* Asegura que el contenido respete los border-radius */
+    font-family: 'Montserrat', monospace;
+    /* Fuente "tech" para el texto del chat */
+    color: var(--text-primary);
+    position: relative;
+    /* Para controlar el z-index */
+    z-index: 1;
+    /* Asegura que esté por encima del fondo del body */
+    backdrop-filter: blur(var(--blur-intensity));
+    /* EFECTO CLAVE: Desenfoque del fondo */
+    border: 1px solid var(--border-color);
+    /* Borde sutil para definirlo */
+}
+
+/*
+ * ----------------------------------------------------
+ * 3. CABECERA DEL CHAT (`.chat-header`)
+ * ----------------------------------------------------
+ * Esta sección maneja la parte superior del chat, donde se muestra la información
+ * del bot y las opciones de la cabecera.
+ */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364, #3e8e9e);
+    color: var(--text-primary);
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    position: relative;
+    z-index: 2;
+}
+
+
+.bot-info {
+    display: flex;
+    align-items: center;
+}
+
+.bot-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    /* Avatar redondo */
+    margin-right: 12px;
+    object-fit: cover;
+    /* Asegura que la imagen cubra el área */
+
+    /* Borde cian alrededor del avatar */
+    box-shadow: 0 0 0 1px rgba(203, 246, 252, 0.548);
+    /* Sombra cian exterior para un "halo" */
+}
+
+.bot-status h2 {
+    margin: 0;
+    font-size: 1.15em;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.bot-status p {
+    margin: 0;
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    font-weight: 300;
+}
+
+.header-options .icon-button {
+    background: rgba(255, 255, 255, 0.05);
+    /* Fondo semitransparente para botones */
+    border: none;
+    font-size: 1.3em;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    backdrop-filter: blur(5px);
+    /* Blur sutil en los botones del header */
+}
+
+.header-options .icon-button:hover {
+    background-color: rgba(0, 188, 212, 0.2);
+    /* Cian al pasar el mouse */
+    transform: scale(1.05);
+    /* Efecto de "zoom" al pasar el mouse */
+}
+
+/*
+ * ----------------------------------------------------
+ * 4. ÁREA DE MENSAJES (`.chat-messages`)
+ * ----------------------------------------------------
+ * Contiene todos los globos de mensajes, incluyendo estilos para mensajes del bot,
+ * del usuario y el indicador de "escribiendo".
+ */
+.chat-messages {
+    flex-grow: 1;
+    /* Permite que ocupe todo el espacio disponible */
+    padding: 20px 15px;
+    overflow-y: auto;
+    /* Habilita el desplazamiento vertical si el contenido excede el tamaño */
+    background-color: transparent;
+    /* Fondo transparente para ver el blur del contenedor principal */
+    display: flex;
+    flex-direction: column;
+    scroll-behavior: smooth;
+    /* Desplazamiento suave al añadir nuevos mensajes */
+
+    /* Estilo de la barra de desplazamiento (solo para navegadores Webkit como Chrome/Safari) */
+    &::-webkit-scrollbar {
+        width: 8px;
+        /* Ancho de la barra de desplazamiento */
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        /* Fondo de la pista de la barra */
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(0, 188, 212, 0.2);
+        /* Cian para el "pulgar" de la barra */
+        border-radius: 10px;
+        transition: background 0.3s ease;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 188, 212, 0.3);
+        /* Color al pasar el mouse */
+    }
+}
+
+.message {
+    display: flex;
+    align-items: flex-start;
+    /* Alinea el avatar y el globo de mensaje */
+    margin-bottom: 18px;
+    max-width: 85%;
+    /* Limita el ancho del mensaje */
+    position: relative;
+    opacity: 0;
+    /* Inicialmente oculto para animación */
+    transform: translateY(15px);
+    /* Desplazado para animación */
+    animation: fadeInSlideUp 0.3s ease-out forwards;
+    /* Animación de entrada de mensaje */
+}
+
+/* Retraso en la animación para un efecto escalonado más dinámico */
+.message:nth-child(even) {
+    animation-delay: 0.1s;
+}
+
+.message:nth-child(odd) {
+    animation-delay: 0.05s;
+}
+
+.message-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    /* Evita que el avatar se encoja */
+    box-shadow: 0 2px 8px var(--shadow-color);
+    /* Sombra en avatares */
+}
+
+.message-content {
+    padding: 12px 18px;
+    border-radius: 22px;
+    /* Bordes redondeados para los globos */
+    line-height: 1.55;
+    word-wrap: break-word;
+    /* Rompe palabras largas para que no desborden */
+    font-size: 0.95em;
+    position: relative;
+    box-shadow: 0 1px 3px var(--shadow-color);
+    /* Sombra sutil en los globos de mensaje */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Pseudo-elemento para el "pico" del globo de mensaje */
+.message-content::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    /* Tipo de borde para crear la forma del pico */
+    z-index: 1;
+    /* Asegura que el pico esté sobre el fondo del globo */
+}
+
+/* Estilos específicos para mensajes del bot */
+.bot-message {
+    justify-content: flex-start;
+    /* Alinea a la izquierda */
+    align-self: flex-start;
+    /* Se alinea a sí mismo a la izquierda del contenedor flex */
+}
+
+.bot-message .message-avatar {
+    margin-right: 12px;
+}
+
+.bot-message .message-content {
+    background-color: #1a233a;
+    /* Fondo oscuro para mensajes del bot */
+    color: var(--text-primary);
+    border-bottom-left-radius: 8px;
+    /* Reducir radio de la esquina cerca del avatar */
+}
+
+.bot-message .message-content::before {
+    border-width: 0 10px 10px 0;
+    /* Define la forma del triángulo del pico */
+    border-color: transparent #1a233a transparent transparent;
+    /* Color del pico */
+    left: -8px;
+    /* Posicionamiento del pico */
+    top: 10px;
+}
+
+/* Estilos específicos para mensajes del usuario */
+.user-message {
+    justify-content: flex-end;
+    /* Alinea a la derecha */
+    align-self: flex-end;
+    /* Se alinea a sí mismo a la derecha del contenedor flex */
+}
+
+.user-message .message-avatar {
+    order: 2;
+    /* Mueve el avatar al final (derecha) */
+    margin-left: 12px;
+}
+
+.user-message .message-content {
+    background-color: #263238;
+    /* Fondo un poco más claro para mensajes del usuario */
+    color: var(--text-primary);
+    border-bottom-right-radius: 8px;
+    /* Reducir radio de la esquina cerca del avatar */
+    order: 1;
+    /* Mueve el contenido al inicio (izquierda del avatar) */
+}
+
+.user-message .message-content::before {
+    border-width: 0 0 10px 10px;
+    border-color: transparent transparent transparent #263238;
+    right: -8px;
+    /* Posicionamiento del pico */
+    top: 10px;
+}
+
+/* Indicador de "escribiendo" */
+.typing-indicator .message-content {
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Fondo más sutil */
+    color: var(--text-secondary);
+    padding: 8px 15px;
+    font-style: italic;
+    animation: typing-pulse 1.5s infinite;
+    /* Animación de pulso */
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.typing-indicator .message-content::before {
+    content: none;
+    /* Eliminar el pico para el indicador de typing */
+}
+
+.typing-indicator .dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-cyan);
+    /* Cian para los puntos */
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+    /* Animación de rebote */
+}
+
+/* Retrasos para los puntos del indicador de typing para un efecto escalonado */
+.typing-indicator .dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-indicator .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* Keyframes para animaciones de mensajes */
+@keyframes typing-pulse {
+    0% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-5px);
+    }
+
+    /* Sube 5px en el medio de la animación */
+}
+
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/*
+ * ----------------------------------------------------
+ * 5. ÁREA DE INPUT DE TEXTO (`.chat-input-area`)
+ * ----------------------------------------------------
+ * Gestiona el campo de entrada de texto y el botón de enviar.
+ */
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-color);
+    background: linear-gradient(135deg, #0f1527, #08151a, #0a0b25, #062127);
+    /* Fondo oscuro semitransparente */
+    backdrop-filter: blur(var(--blur-intensity));
+    /* Efecto blur */
+    box-shadow: 0 -4px 15px var(--shadow-color);
+    /* Sombra sutil hacia arriba */
+    position: relative;
+    z-index: 10;
+    /* Asegura que esté por encima de todo lo demás */
+}
+
+.chat-input-area .icon-button {
+    background: transparent;
+    border: none;
+    font-size: 1.4em;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin-right: 12px;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    box-shadow: none;
+    flex-shrink: 0;
+    /* Evita que el botón se encoja */
+}
+
+.chat-input-area .icon-button:hover {
+    background-color: rgba(0, 188, 212, 0.1);
+    /* Cian al pasar el mouse */
+    color: var(--accent-cyan);
+    /* Texto cian al pasar el mouse */
+    transform: scale(1.1);
+}
+
+.chat-input-area .icon-button:active {
+    transform: scale(0.95);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+    /* Efecto de click/presión */
+}
+
+#user-input {
+    flex-grow: 1;
+    /* Permite que el input ocupe el espacio restante */
+    padding: 12px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 28px;
+    /* Bordes muy redondeados */
+    font-size: 1em;
+    outline: none;
+    /* Elimina el contorno de enfoque predeterminado */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Fondo claro semitransparente */
+    color: var(--text-primary);
+    /* Color de texto claro */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* Sombra interna sutil */
+}
+
+#user-input:focus {
+    border-color: var(--accent-cyan);
+    /* Cian al enfocar */
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+    /* Sombra de enfoque azul claro */
+}
+
+.send-button {
+    background-color: var(--accent-turquesa);
+    /* Turquesa para el botón de enviar */
+    color: var(--bg-dark);
+    /* Texto oscuro para el contraste con el botón turquesa */
+    border: none;
+    border-radius: 50%;
+    /* Botón redondo */
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.3em;
+    cursor: pointer;
+    margin-left: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    /* Sombra en el botón enviar */
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.send-button:hover {
+    box-shadow: 0 6px 20px var(--shadow-color);
+    /* Sombra más grande al pasar el mouse */
+    transform: translateY(-2px);
+    /* Efecto de elevación */
+}
+
+.send-button:active {
+    transform: translateY(0);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* Efecto de click/presión */
+}
+
+/*
+ * ----------------------------------------------------
+ * 6. ÁREA DE GRABACIÓN DE AUDIO (`.audio-recorder`)
+ * ----------------------------------------------------
+ * Estilos para la interfaz de grabación de audio, incluyendo la animación de las barras.
+ */
+.audio-recorder {
+    position: absolute;
+    /* Para superponerse sobre el input normal */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    /* Hacemos que sea un contenedor flex */
+    align-items: center;
+    /* Alinea los elementos verticalmente al centro */
+    justify-content: space-between;
+    /* Distribuye el espacio entre los elementos */
+    padding: 12px 18px;
+    background-color: rgba(18, 24, 38, 0.9);
+    /* Fondo similar al input */
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 15px var(--shadow-color);
+    z-index: 10;
+    gap: 15px;
+    /* Espacio entre los elementos flexibles */
+    backdrop-filter: blur(var(--blur-intensity));
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+}
+
+/* Animación visual de Grabación de Audio (incluye las barras y el texto de transcripción) */
+.recording-animation {
+    display: flex;
+    /* Hacemos que este también sea un contenedor flex */
+    align-items: center;
+    /* Alinea los elementos verticalmente (barras y texto) */
+    justify-content: center;
+    height: 45px;
+    gap: 4px;
+    /* Espacio entre las barras de sonido */
+    margin: 0 10px;
+    /* Margen para separarlo de los bordes o botones */
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Fondo sutil para la animación */
+    border-radius: 25px;
+    padding: 0 15px;
+    flex-grow: 1;
+    /* Permite que ocupe el espacio disponible entre el botón de micrófono y el de cancelar */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.recording-animation .bar {
+    width: 6px;
+    height: 10px;
+    /* Altura base más pequeña */
+    background-color: var(--accent-cyan);
+    /* Cian para las barras */
+    animation: sound-bars 1.2s ease-in-out infinite alternate;
+    /* Animación de las barras de sonido */
+    border-radius: 3px;
+}
+
+/* Retrasos para cada barra para crear un efecto de onda visual */
+.recording-animation .bar:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.recording-animation .bar:nth-child(2) {
+    animation-delay: -0.2s;
+}
+
+.recording-animation .bar:nth-child(3) {
+    animation-delay: -0.4s;
+}
+
+.recording-animation .bar:nth-child(4) {
+    animation-delay: -0.6s;
+}
+
+.recording-animation .bar:nth-child(5) {
+    animation-delay: -0.8s;
+}
+
+/* Keyframes para la animación de las barras de sonido */
+@keyframes sound-bars {
+    0% {
+        height: 10px;
+        opacity: 0.6;
+    }
+
+    50% {
+        height: 35px;
+        opacity: 1;
+    }
+
+    /* Sube a una altura mayor y es más opaco */
+    100% {
+        height: 10px;
+        opacity: 0.6;
+    }
+}
+
+#transcription-text {
+    color: var(--text-secondary);
+    margin-left: 10px;
+    font-size: 0.95em;
+    font-style: italic;
+    white-space: nowrap;
+    /* Evita que el texto se rompa */
+    overflow: hidden;
+    /* Oculta el texto que desborda */
+    text-overflow: ellipsis;
+    /* Añade puntos suspensivos (...) si el texto es demasiado largo */
+    max-width: calc(100% - 150px);
+    /* Limita el ancho para dejar espacio a los botones */
+    flex-shrink: 1;
+}
+
+/* Botón de cancelar grabación */
+#cancel-recording {
+    background-color: #f44336;
+    /* Rojo para cancelar */
+    color: var(--bg-dark);
+    /* Texto oscuro para el contraste */
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    cursor: pointer;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0;
+    /* Evita que el botón se encoja */
+    /* Eliminamos el 'position: absolute' si lo tenía antes para que se integre en el flexbox */
+}
+
+#cancel-recording:hover {
+    background-color: #d32f2f;
+    /* Rojo más oscuro al pasar el mouse */
+    transform: scale(1.05);
+}
+
+/* Clases de utilidad para ocultar/mostrar elementos dinámicamente con JavaScript */
+.chat-input-area #user-input.hidden+.send-button.hidden {
+    display: none !important;
+}
+
+.chat-input-area #user-input.hidden {
+    display: none !important;
+}
+
+.chat-input-area .send-button.hidden {
+    display: none !important;
+}
+
+/*
+ * ----------------------------------------------------
+ * 7. OPCIONES DINÁMICAS (`.chat-options`)
+ * ----------------------------------------------------
+ * Estilos para los botones de opciones que pueden aparecer debajo del chat (ej. respuestas rápidas).
+ */
+.chat-options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: rgba(18, 24, 38, 0.9);
+    /* Fondo similar al input */
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+    box-sizing: border-box;
+    /* Incluye padding y borde en el ancho total */
+    gap: 10px;
+    min-height: 65px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Sombra interna sutil */
+    backdrop-filter: blur(5px);
+    /* Blur sutil */
+}
+
+.options-wrapper {
+    display: flex;
+    flex-grow: 1;
+    overflow-x: hidden;
+    /* Oculta la barra de desplazamiento horizontal por defecto */
+    scroll-behavior: smooth;
+    /* Desplazamiento suave para las flechas de navegación */
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 5px 0;
+}
+
+.option-button {
+    background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end));
+    /* Degradado en botones de opción */
+    color: var(--bg-dark);
+    /* Texto oscuro para contraste */
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    /* Bordes muy redondeados */
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+    /* Evita que el texto del botón se rompa */
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    /* Evita que los botones se encojan */
+    box-shadow: 0 4px 10px var(--shadow-color);
+    /* Sombra más definida */
+    font-weight: 500;
+}
+
+.option-button:hover {
+    background: linear-gradient(45deg, #0288d1, #00838f);
+    /* Degradado más oscuro al pasar el mouse */
+    transform: translateY(-3px) scale(1.02);
+    /* Efecto de elevación y zoom */
+    box-shadow: 0 6px 15px var(--shadow-color);
+}
+
+.option-button:active {
+    transform: translateY(0);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* Efecto de click */
+}
+
+.options-arrow {
+    background-color: rgba(255, 255, 255, 0.08);
+    /* Fondo sutil para flechas */
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: var(--text-primary);
+    /* Color de flecha claro */
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.options-arrow:hover {
+    background-color: rgba(0, 188, 212, 0.15);
+    /* Cian al pasar el mouse */
+    color: var(--accent-cyan);
+    transform: scale(1.05);
+}
+
+.options-arrow:disabled {
+    background-color: rgba(255, 255, 255, 0.03);
+    /* Más oscuro y menos visible cuando deshabilitado */
+    color: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+    /* Cursor de "no permitido" */
+    box-shadow: none;
+    transform: none;
+}
+
+/*
+ * ----------------------------------------------------
+ * 8. ESTILOS PARA MARKDOWN Y CONTENIDO ADICIONAL
+ * ----------------------------------------------------
+ * Estilos para elementos Markdown como listas, negritas, cursivas, enlaces y bloques de código.
+ * También incluye estilos para imágenes y mapas de Google dentro del chat.
+ */
+.bot-message .message-content ul {
+    list-style: none;
+    /* Elimina los bullets predeterminados */
+    padding-left: 0;
+    margin: 5px 0 0 0;
+}
+
+.bot-message .message-content li {
+    position: relative;
+    padding-left: 25px;
+    /* Espacio para el bullet personalizado */
+    margin-bottom: 5px;
+}
+
+.bot-message .message-content li::before {
+    content: '•';
+    /* Bullet personalizado */
+    position: absolute;
+    left: 0;
+    color: var(--accent-cyan);
+    /* Cian para los bullets */
+    font-weight: bold;
+    font-size: 1.2em;
+    top: 0px;
+}
+
+.bot-message .message-content ol {
+    padding-left: 20px;
+    margin: 5px 0 0 0;
+}
+
+.bot-message .message-content ol li {
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.message-content strong {
+    font-weight: 700;
+    color: var(--text-primary);
+    /* Negritas más pronunciadas */
+}
+
+.message-content em {
+    font-style: italic;
+    color: var(--text-secondary);
+    /* Cursivas más sutiles */
+}
+
+.message-content a {
+    color: var(--accent-turquesa);
+    /* Turquesa para enlaces */
+    text-decoration: none;
+    /* Sin subrayado por defecto */
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.message-content a:hover {
+    color: #00e5ff;
+    /* Cian más claro al pasar el mouse */
+    text-decoration: underline;
+    /* Subrayado al pasar el mouse */
+}
+
+.message-content code {
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Fondo para bloques de código */
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Roboto Mono', monospace;
+    /* Fuente monoespaciada para código */
+    font-size: 0.9em;
+    color: #ffab91;
+    /* Naranja suave para el código (similar a editores dark) */
+}
+
+/* Estilo para imágenes dentro del chat */
+.chat-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin-top: 15px;
+    display: block;
+    object-fit: contain;
+    max-height: 250px;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    transition: transform 0.3s ease;
+}
+
+.chat-image:hover {
+    transform: scale(1.02);
+    /* Ligero zoom al pasar el mouse */
+}
+
+/* Estilos para iframes de Google Maps u otros embeds responsivos */
+.map-responsive {
+    position: relative;
+    padding-bottom: 65%;
+    /* Relación de aspecto 16:9 (altura es 65% del ancho) */
+    height: 0;
+    overflow: hidden;
+    margin-top: 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.map-responsive iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Clase de utilidad para ocultar elementos con `display: none;` */
+.hidden {
+    display: none !important;
+}
+
+/*
+ * ----------------------------------------------------
+ * 9. ÁREA DE CAPTURA DE LA CÁMARA (`.camera-capture-area`)
+ * ----------------------------------------------------
+ * Estilos para la interfaz de captura de imagen desde la cámara.
+ */
+.camera-capture-area {
+    position: absolute;
+    /* Para superponerse en la parte inferior del chat */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 250px;
+    /* Altura del área de la cámara */
+    background-color: rgba(18, 24, 38, 0.95);
+    /* Fondo casi negro y semitransparente */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+    /* Sombra interna para profundidad */
+    border-top: 1px solid var(--border-color);
+    z-index: 50;
+    /* Z-index alto para asegurar que esté sobre todo */
+    border-bottom-left-radius: 25px;
+    /* Redondear las esquinas inferiores */
+    border-bottom-right-radius: 25px;
+    backdrop-filter: blur(8px);
+    /* Blur para el fondo de la cámara */
+}
+
+.camera-capture-area .video-preview,
+.camera-capture-area #photo-canvas {
+    width: 100%;
+    max-height: 170px;
+    /* Ajuste el tamaño del preview */
+    object-fit: contain;
+    background-color: black;
+    /* Fondo negro para el video/imagen */
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.camera-capture-area .camera-controls {
+    display: flex;
+    gap: 15px;
+    /* Más espacio entre botones */
+    flex-wrap: wrap;
+    /* Permite que los botones se envuelvan si no hay espacio */
+    justify-content: center;
+}
+
+.camera-capture-area .camera-button {
+    background-color: var(--accent-turquesa);
+    /* Turquesa para el botón principal de cámara */
+    color: var(--bg-dark);
+    /* Texto oscuro para contraste */
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Espacio entre el icono y el texto */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    font-weight: 500;
+}
+
+.camera-capture-area .camera-button.secondary {
+    background-color: #ffb74d;
+    /* Naranja para acciones secundarias (ej. cambiar cámara) */
+}
+
+.camera-capture-area .camera-button.danger {
+    background-color: #f44336;
+    /* Rojo para cancelar/detener */
+}
+
+.camera-capture-area .camera-button:hover {
+    transform: translateY(-2px);
+    /* Efecto de elevación */
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+}
+
+.camera-capture-area .camera-button:active {
+    transform: translateY(0);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* Efecto de click/presión */
+}
+
+.camera-capture-area .camera-button i {
+    margin-right: 0;
+    /* No necesitamos margen aquí ya que `gap` maneja el espaciado */
+}
+
+/*
+ * ----------------------------------------------------
+ * 10. MEDIA QUERIES PARA RESPONSIVIDAD
+ * ----------------------------------------------------
+ * Adaptaciones del diseño para pantallas más pequeñas (dispositivos móviles).
+ */
+@media (max-width: 600px) {
+    .chat-container {
+        margin: 0;
+        border-radius: 0;
+        /* Sin bordes redondeados en móviles para ocupar toda la pantalla */
+        height: 100vh;
+        max-width: 100%;
+        max-height: 100vh;
+
+        /* Sin sombra en móviles para un look más nativo */
+
+
+        /* Color sólido para mejor rendimiento */
+
+        /* Desactiva el blur en móviles por rendimiento */
+    }
+
+    body {
+        min-height: 100vh;
+
+        /* Estira el contenido verticalmente */
+    }
+
+    body::before {
+
+        /* Ocultar el fondo complejo en móviles por rendimiento */
+    }
+
+    .message {
+        max-width: 95%;
+        /* Mensajes ligeramente más anchos en móviles */
+        margin-bottom: 12px;
+    }
+
+    .message-content {
+        padding: 10px 15px;
+        border-radius: 18px;
+    }
+
+    /* Ajuste de esquinas para globos de mensaje en móvil */
+    .user-message .message-content {
+        border-bottom-right-radius: 6px;
+    }
+
+    .bot-message .message-content {
+        border-bottom-left-radius: 6px;
+    }
+
+    .chat-header {
+        padding: 12px 15px;
+        box-shadow: 0 2px 10px var(--shadow-color);
+    }
+
+    .bot-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .bot-status h2 {
+        font-size: 1em;
+    }
+
+    .header-options .icon-button {
+        padding: 8px;
+        font-size: 1.1em;
+    }
+
+    .chat-input-area {
+        padding: 10px 12px;
+        box-shadow: 0 -2px 10px var(--shadow-color);
+        backdrop-filter: none;
+        /* Desactiva el blur en móviles */
+    }
+
+    .chat-input-area .icon-button {
+        font-size: 1.2em;
+        margin-right: 8px;
+        padding: 8px;
+    }
+
+    #user-input {
+        padding: 10px 16px;
+        border-radius: 22px;
+    }
+
+    .send-button {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1em;
+        margin-left: 8px;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .chat-options {
+        padding: 8px 10px;
+        min-height: 55px;
+        backdrop-filter: none;
+        /* Desactiva el blur en móviles */
+    }
+
+    .option-button {
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .options-arrow {
+        width: 35px;
+        height: 35px;
+        font-size: 1em;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .audio-recorder {
+        padding: 10px 12px;
+        border-bottom-left-radius: 0;
+        /* Sin bordes redondeados en móvil */
+        border-bottom-right-radius: 0;
+        box-shadow: 0 -2px 10px var(--shadow-color);
+        backdrop-filter: none;
+        /* Desactiva el blur en móviles */
+        /* Asegúrate de que siga siendo flexbox en móvil */
+        display: flex;
+        /* Mantenemos flexbox */
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        /* Ajusta el gap para móvil si lo necesitas */
+    }
+
+    #cancel-recording {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1em;
+    }
+
+    .recording-animation {
+        height: 40px;
+        padding: 0 10px;
+        border-radius: 20px;
+    }
+
+    .recording-animation .bar {
+        width: 5px;
+        height: 8px;
+    }
+
+    /* Ajuste de keyframes para animaciones en móvil */
+    @keyframes sound-bars {
+        0% {
+            height: 8px;
+            opacity: 0.6;
+        }
+
+        50% {
+            height: 30px;
+            opacity: 1;
+        }
+
+        100% {
+            height: 8px;
+            opacity: 0.6;
+        }
+    }
+
+    #transcription-text {
+        font-size: 0.85em;
+        max-width: calc(100% - 100px);
+    }
+
+    .camera-capture-area {
+        height: 220px;
+        padding: 10px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .camera-capture-area .video-preview,
+    .camera-capture-area #photo-canvas {
+        max-height: 120px;
+        margin-bottom: 10px;
+    }
+
+    .camera-capture-area .camera-button {
+        padding: 8px 12px;
+        font-size: 13px;
+        gap: 5px;
+    }
+}
+
+/*
+ * ----------------------------------------------------
+ * ESTILOS PARA PANTALLAS DE 500PX O MENOS
+ * ----------------------------------------------------
+ * Ajustes adicionales para dispositivos móviles pequeños.
+ */
+@media (max-width: 500px) {
+    .chat-container {
+        /* Ya es 100% width y height en 600px, así que no se necesita cambiar mucho aquí */
+    }
+
+    .chat-header {
+        padding: 10px 15px;
+        /* Ligeramente menos padding que en 600px */
+    }
+
+    .bot-avatar {
+        width: 38px;
+        /* Un poco más pequeño */
+        height: 38px;
+    }
+
+    .bot-status h2 {
+        font-size: 0.95em;
+        /* Fuente un poco más pequeña */
+    }
+
+    .header-options .icon-button {
+        font-size: 1.05em;
+        /* Iconos un poco más pequeños */
+        padding: 7px;
+    }
+
+    .message-content {
+        padding: 9px 14px;
+        /* Ajuste sutil del padding de los mensajes */
+        font-size: 0.95em;
+        /* Fuente de mensaje ligeramente más pequeña */
+    }
+
+    .chat-input-area {
+        padding: 9px 12px;
+        /* Ligeramente menos padding en el área de input */
+    }
+
+    #user-input {
+        padding: 9px 15px;
+        /* Menos padding en el input */
+        font-size: 0.95em;
+        /* Fuente del input ligeramente más pequeña */
+    }
+
+    .send-button {
+        width: 40px;
+        /* Botón de enviar un poco más pequeño */
+        height: 40px;
+        font-size: 1.05em;
+    }
+
+    .chat-options {
+        padding: 7px 9px;
+        /* Ajuste del padding de las opciones */
+        min-height: 50px;
+    }
+
+    .option-button {
+        padding: 7px 13px;
+        /* Ajuste del padding del botón de opción */
+        font-size: 0.8em;
+        /* Fuente más pequeña para las opciones */
+    }
+
+    .options-arrow {
+        width: 33px;
+        /* Flechas un poco más pequeñas */
+        height: 33px;
+        font-size: 0.95em;
+    }
+
+    .audio-recorder {
+        padding: 9px 11px;
+        /* Ajuste del padding del grabador de audio */
+    }
+
+    #cancel-recording {
+        width: 38px;
+        /* Botón de cancelar un poco más pequeño */
+        height: 38px;
+    }
+
+    .recording-animation {
+        height: 38px;
+        /* Animación de barras un poco más pequeña */
+    }
+
+    #transcription-text {
+        font-size: 0.8em;
+        /* Texto de transcripción ligeramente más pequeño */
+    }
+}
+
+/**Nuevo: Estilos para pantallas de 452px o menos**/
+
+
+@media (max-width: 452px) {
+    .chat-input-area {
+        padding: 8px 10px;
+        /* Reduce padding slightly more to give space */
+    }
+
+    .chat-input-area .icon-button {
+        margin-right: 6px;
+        /* Reduce margin to make space for send button */
+        font-size: 1.1em;
+        /* Keep icons visible but potentially slightly smaller */
+        padding: 7px;
+    }
+
+    #user-input {
+        padding: 8px 12px;
+        /* Reduce input padding */
+        font-size: 0.88em;
+        /* Slightly smaller font in input */
+    }
+
+    .send-button {
+        width: 36px;
+        /* **Shrink send button size** */
+        height: 36px;
+        font-size: 0.95em;
+        /* Slightly smaller font for icon/text */
+        margin-left: 6px;
+        /* Reduce margin to fit */
+    }
+
+    /* Optional: If messages are still too wide and pushing content */
+    .message {
+        max-width: 98%;
+    }
+
+    /* Optional: Adjust header items if they're squeezed */
+    .chat-header .bot-status {
+        flex-shrink: 1;
+        /* Allow the status text to shrink if needed */
+        min-width: 0;
+        /* Prevents overflow with long text */
+    }
+
+    .chat-header h2 {
+        font-size: 0.9em;
+    }
+
+    .header-options .icon-button {
+        padding: 5px;
+        /* Smaller button padding */
+    }
+}
+
+/*
+ * ----------------------------------------------------
+ * ESTILOS PARA PANTALLAS DE 400PX O MENOS (EXISTENTE)
+ * ----------------------------------------------------
+ * Ajustes adicionales para dispositivos muy pequeños.
+ */
+
+@media (max-width: 400px) {
+    .chat-container {
+        /* No es necesario cambiar nada aquí si ya es 100% width y height en 600px */
+
+    }
+
+    .chat-header {
+        padding: 10px 12px;
+        /* Reducir aún más el padding del header */
+    }
+
+    .bot-avatar {
+        width: 35px;
+        /* Avatar un poco más pequeño */
+        height: 35px;
+        margin-right: 8px;
+    }
+
+    .bot-status h2 {
+        font-size: 0.9em;
+        /* Título del bot ligeramente más pequeño */
+    }
+
+    .bot-status p {
+        font-size: 0.75em;
+        /* Texto de estado más pequeño */
+    }
+
+    .header-options .icon-button {
+        font-size: 1em;
+        /* Iconos de header más pequeños */
+        padding: 6px;
+    }
+
+    .chat-messages {
+        padding: 15px 10px;
+        /* Reducir padding de los mensajes */
+    }
+
+    .message {
+        margin-bottom: 10px;
+        /* Menos espacio entre mensajes */
+        max-width: 98%;
+        /* Ocupa casi todo el ancho */
+    }
+
+    .message-content {
+        padding: 8px 12px;
+        /* Menos padding interno en los globos */
+        border-radius: 16px;
+        /* Ligeramente menos redondeado */
+        font-size: 0.9em;
+        /* Texto de mensaje un poco más pequeño */
+    }
+
+    .user-message .message-content {
+        border-bottom-right-radius: 4px;
+        /* Ajuste más fino de esquinas */
+    }
+
+    .bot-message .message-content {
+        border-bottom-left-radius: 4px;
+    }
+
+    .message-avatar {
+        width: 32px;
+        /* Avatar de mensaje más pequeño */
+        height: 32px;
+    }
+
+    .bot-message .message-avatar {
+        margin-right: 8px;
+    }
+
+    .user-message .message-avatar {
+        margin-left: 8px;
+    }
+
+    .chat-input-area {
+        padding: 5px 10px;
+        /* Reducir padding del área de input */
+    }
+
+    .chat-input-area .icon-button {
+        font-size: 1.1em;
+        /* Iconos de input más pequeños */
+        margin-right: 1px;
+        padding: 1px;
+    }
+
+    #user-input {
+        padding: 5px 14px;
+        /* Menos padding en el input */
+        border-radius: 20px;
+        font-size: 0.9em;
+        /* Texto del input más pequeño */
+    }
+
+    .send-button {
+        width: 38px;
+        /* Botón enviar más pequeño */
+        height: 38px;
+        font-size: 1em;
+        margin-left: 8px;
+    }
+
+    .chat-options {
+        padding: 6px 8px;
+        /* Reducir padding de opciones */
+        min-height: 45px;
+        /* Menor altura mínima */
+        gap: 8px;
+    }
+
+    .option-button {
+        padding: 6px 12px;
+        /* Menos padding en los botones de opción */
+        font-size: 0.8em;
+        /* Texto más pequeño */
+        border-radius: 18px;
+    }
+
+    .options-arrow {
+        width: 30px;
+        /* Flechas más pequeñas */
+        height: 30px;
+        font-size: 0.9em;
+    }
+
+    .audio-recorder {
+        padding: 8px 10px;
+        /* Reducir padding del audio recorder */
+        gap: 8px;
+    }
+
+    #cancel-recording {
+        width: 35px;
+        /* Botón de cancelar más pequeño */
+        height: 35px;
+        font-size: 1em;
+    }
+
+    .recording-animation {
+        height: 35px;
+        /* Animación de barras más pequeña */
+        padding: 0 8px;
+        border-radius: 18px;
+    }
+
+    .recording-animation .bar {
+        width: 4px;
+        /* Barras más delgadas */
+        height: 6px;
+    }
+
+    @keyframes sound-bars {
+        0% {
+            height: 6px;
+            opacity: 0.6;
+        }
+
+        50% {
+            height: 25px;
+            opacity: 1;
+        }
+
+        /* Altura máxima ajustada */
+        100% {
+            height: 6px;
+            opacity: 0.6;
+        }
+    }
+
+    #transcription-text {
+        font-size: 0.8em;
+        /* Texto de transcripción más pequeño */
+        max-width: calc(100% - 80px);
+        /* Ajuste del ancho máximo */
+    }
+
+    .camera-capture-area {
+        height: 180px;
+        /* Área de cámara más pequeña */
+        padding: 8px;
+    }
+
+    .camera-capture-area .video-preview,
+    .camera-capture-area #photo-canvas {
+        max-height: 100px;
+        margin-bottom: 8px;
+    }
+
+    .camera-capture-area .camera-button {
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 4px;
+    }
+}
+
+
+
+
+@media (max-width: 350px) {
+    .chat-header {
+        padding: 8px 10px;
+        /* Reducir aún más el padding del header */
+    }
+
+    .bot-avatar {
+        width: 32px;
+        /* Avatar más pequeño */
+        height: 32px;
+        margin-right: 6px;
+    }
+
+    .bot-status h2 {
+        font-size: 0.8em;
+        /* Título del bot más pequeño */
+    }
+
+    .bot-status p {
+        font-size: 0.65em;
+        /* Texto de estado más pequeño */
+    }
+
+    .header-options .icon-button {
+        font-size: 0.95em;
+        /* Iconos de header más pequeños */
+        padding: 5px;
+    }
+
+    .chat-messages {
+        padding: 12px 8px;
+        /* Menos padding en la zona de mensajes */
+    }
+
+    .message {
+        margin-bottom: 8px;
+        /* Menos espacio entre mensajes */
+        max-width: 100%;
+        /* Ocupar todo el ancho */
+    }
+
+    .message-content {
+        padding: 5px 10px;
+        /* Padding reducido en los globos */
+        border-radius: 14px;
+        /* Menos redondeado */
+        font-size: 0.85em;
+        /* Texto de mensaje más pequeño */
+    }
+
+    .chat-input-area {
+        padding: 2px 8px;
+        /* Padding del área de input aún más pequeño */
+    }
+
+    .chat-input-area .icon-button {
+        font-size: 1em;
+        /* Iconos de input más pequeños */
+        margin-right: 2px;
+        padding: 1px;
+    }
+
+    #user-input {
+        padding: 2px 10px;
+        /* Padding del input aún más pequeño */
+        border-radius: 18px;
+        font-size: 0.8em;
+        /* Texto del input más pequeño */
+    }
+
+    .send-button {
+        width: 32px;
+        /* Botón enviar aún más pequeño */
+        height: 32px;
+        font-size: 0.85em;
+        margin-left: 5px;
+    }
+
+    .chat-options {
+        padding: 5px 6px;
+        /* Padding de opciones reducido */
+        min-height: 40px;
+        gap: 6px;
+    }
+
+    .option-button {
+        padding: 5px 10px;
+        /* Padding de botón de opción reducido */
+        font-size: 0.75em;
+        /* Texto de opción más pequeño */
+        border-radius: 16px;
+    }
+
+    .options-arrow {
+        width: 28px;
+        /* Flechas aún más pequeñas */
+        height: 28px;
+        font-size: 0.85em;
+    }
+
+    .audio-recorder {
+        padding: 7px 8px;
+        /* Padding del audio recorder reducido */
+        gap: 6px;
+    }
+
+    #cancel-recording {
+        width: 30px;
+        /* Botón de cancelar más pequeño */
+        height: 30px;
+        font-size: 0.85em;
+    }
+
+    .recording-animation {
+        height: 30px;
+        /* Animación de barras más pequeña */
+        padding: 0 5px;
+        border-radius: 15px;
+    }
+
+    .recording-animation .bar {
+        width: 3px;
+        height: 4px;
+    }
+
+    @keyframes sound-bars {
+        0% {
+            height: 4px;
+            opacity: 0.6;
+        }
+
+        50% {
+            height: 18px;
+            opacity: 1;
+        }
+
+        /* Altura máxima ajustada */
+        100% {
+            height: 4px;
+            opacity: 0.6;
+        }
+    }
+
+    #transcription-text {
+        font-size: 0.7em;
+        /* Texto de transcripción más pequeño */
+        max-width: calc(100% - 60px);
+    }
+
+    .camera-capture-area {
+        height: 140px;
+        /* Área de cámara más pequeña */
+        padding: 5px;
+    }
+
+    .camera-capture-area .video-preview,
+    .camera-capture-area #photo-canvas {
+        max-height: 70px;
+        margin-bottom: 6px;
+    }
+
+    .camera-capture-area .camera-button {
+        padding: 4px 7px;
+        font-size: 10px;
+        gap: 3px;
+    }
+}
+
+/*
+ * ----------------------------------------------------
+ * ESTILOS PARA PANTALLAS DE 300PX O MENOS
+ * ----------------------------------------------------
+ * Ajustes para los dispositivos móviles más pequeños (ej. iPhone SE en modo portrait).
+ */
+@media (max-width: 300px) {
+    .chat-header {
+        padding: 8px 10px;
+        /* Reducir aún más el padding */
+    }
+
+    .bot-avatar {
+        width: 30px;
+        /* Avatar aún más pequeño */
+        height: 30px;
+        margin-right: 6px;
+    }
+
+    .bot-status h2 {
+        font-size: 0.85em;
+        /* Fuente aún más pequeña */
+    }
+
+    .bot-status p {
+        font-size: 0.7em;
+    }
+
+    .header-options .icon-button {
+        font-size: 0.9em;
+        padding: 5px;
+    }
+
+    .chat-messages {
+        padding: 10px 8px;
+        /* Menos padding en la zona de mensajes */
+    }
+
+    .message {
+        margin-bottom: 8px;
+        /* Menos espacio entre mensajes */
+        max-width: 100%;
+        /* Ocupar todo el ancho */
+    }
+
+    .message-content {
+        padding: 7px 10px;
+        /* Padding reducido en los globos */
+        border-radius: 14px;
+        /* Menos redondeado */
+        font-size: 0.85em;
+        /* Texto de mensaje más pequeño */
+    }
+
+    .user-message .message-content {
+        border-bottom-right-radius: 3px;
+    }
+
+    .bot-message .message-content {
+        border-bottom-left-radius: 3px;
+    }
+
+    .message-avatar {
+        width: 28px;
+        /* Avatar de mensaje más pequeño */
+        height: 28px;
+    }
+
+    .bot-message .message-avatar {
+        margin-right: 6px;
+    }
+
+    .user-message .message-avatar {
+        margin-left: 6px;
+    }
+
+    .chat-input-area {
+        padding: 6px 8px;
+        /* Padding del área de input aún más pequeño */
+    }
+
+    .chat-input-area .icon-button {
+        font-size: 1em;
+        margin-right: 5px;
+        padding: 5px;
+    }
+
+    #user-input {
+        padding: 6px 12px;
+        /* Padding del input aún más pequeño */
+        border-radius: 18px;
+        font-size: 0.85em;
+    }
+
+    .send-button {
+        width: 35px;
+        /* Botón enviar aún más pequeño */
+        height: 35px;
+        font-size: 0.9em;
+        margin-left: 6px;
+    }
+
+    .chat-options {
+        padding: 5px 6px;
+        /* Padding de opciones reducido */
+        min-height: 40px;
+        gap: 6px;
+    }
+
+    .option-button {
+        padding: 5px 10px;
+        /* Padding de botón de opción reducido */
+        font-size: 0.75em;
+        /* Texto de opción más pequeño */
+        border-radius: 16px;
+    }
+
+    .options-arrow {
+        width: 28px;
+        /* Flechas aún más pequeñas */
+        height: 28px;
+        font-size: 0.85em;
+    }
+
+    .audio-recorder {
+        padding: 6px 8px;
+        /* Padding del audio recorder reducido */
+        gap: 6px;
+    }
+
+    #cancel-recording {
+        width: 32px;
+        /* Botón de cancelar más pequeño */
+        height: 32px;
+        font-size: 0.9em;
+    }
+
+    .recording-animation {
+        height: 32px;
+        /* Animación de barras más pequeña */
+        padding: 0 6px;
+        border-radius: 16px;
+    }
+
+    .recording-animation .bar {
+        width: 3px;
+        /* Barras más delgadas */
+        height: 5px;
+    }
+
+    @keyframes sound-bars {
+        0% {
+            height: 5px;
+            opacity: 0.6;
+        }
+
+        50% {
+            height: 20px;
+            opacity: 1;
+        }
+
+        /* Altura máxima ajustada */
+        100% {
+            height: 5px;
+            opacity: 0.6;
+        }
+    }
+
+    #transcription-text {
+        font-size: 0.75em;
+        /* Texto de transcripción más pequeño */
+        max-width: calc(100% - 70px);
+    }
+
+    .camera-capture-area {
+        height: 150px;
+        /* Área de cámara más pequeña */
+        padding: 6px;
+    }
+
+    .camera-capture-area .video-preview,
+    .camera-capture-area #photo-canvas {
+        max-height: 80px;
+        margin-bottom: 6px;
+    }
+
+    .camera-capture-area .camera-button {
+        padding: 5px 8px;
+        font-size: 11px;
+        gap: 3px;
+    }
+}
+
+
+/*NEON MOVIMIENTO ----------------------------------- */
+#fluid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100dvw;
+    height: 100dvh;
+}

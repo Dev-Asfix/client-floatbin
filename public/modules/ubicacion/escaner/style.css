@@ -1,0 +1,1337 @@
+/* Variables CSS para facilitar la personalización */
+:root {
+    --primary-color: #3f51b5;
+    /* Azul índigo profundo */
+    --secondary-color: #673ab7;
+    /* Púrpura vibrante */
+    --accent-color: #ffc107;
+    /* Ámbar para énfasis */
+    --text-color-dark: #212121;
+    /* Gris oscuro casi negro */
+    --text-color-medium: #424242;
+    /* Gris oscuro */
+    --text-color-light: #f5f5f5;
+    /* Gris muy claro */
+    --background-color-light: #fdfdfd;
+    /* Blanco casi puro */
+    --background-color-dark: #e8eaf6;
+    /* Azul muy claro para fondos */
+    --card-background: #ffffff;
+    /* Blanco puro para tarjetas */
+    --border-color: #e0e0e0;
+    /* Gris claro para bordes */
+    --shadow-light: 0 3px 6px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 12px 24px rgba(0, 0, 0, 0.2);
+    --error-color: #ef5350;
+    /* Rojo suave */
+    --info-color: #29b6f6;
+    /* Azul cielo */
+    --success-color: #66bb6a;
+    /* Verde éxito */
+
+    /* Nuevas variables para gradientes y transiciones */
+    --gradient-primary: linear-gradient(45deg, var(--primary-color), #5c6bc0);
+    --gradient-secondary: linear-gradient(45deg, var(--secondary-color), #9575cd);
+    --transition-ease: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* Curva de aceleración */
+}
+
+/* Estilos Generales */
+body {
+    font-family: 'Roboto', sans-serif;
+    /* Fuente moderna y legible */
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 30px;
+    /* Más padding para una sensación más espaciosa */
+    box-sizing: border-box;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1300px;
+    /* Un poco más ancho */
+    gap: 25px;
+    /* Más espacio entre secciones */
+}
+
+/* Encabezado Principal */
+#mainHeader {
+    background: var(--gradient-primary);
+    /* Gradiente para el encabezado */
+    color: var(--text-color-light);
+    padding: 25px 30px;
+    text-align: center;
+    border-radius: 12px;
+    /* Más redondeado */
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition-ease);
+    margin-bottom: 25px;
+    position: relative;
+    /* Para posibles efectos futuros */
+    overflow: hidden;
+    /* Asegura que el gradiente no se desborde */
+}
+
+#mainHeader::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.05);
+    /* Sutil brillo en el fondo */
+    transform: rotate(30deg);
+    pointer-events: none;
+    transition: var(--transition-ease);
+}
+
+#mainHeader:hover::before {
+    transform: rotate(45deg);
+}
+
+#mainHeader.hidden {
+    display: none;
+}
+
+#mainHeader h1 {
+    margin: 0;
+    font-size: 2.5em;
+    /* Tamaño de fuente más grande */
+    font-weight: 700;
+    /* Más peso para el título */
+    letter-spacing: 1px;
+}
+
+/* Tarjeta del Escáner */
+#scannerCard {
+    background-color: var(--card-background);
+    border-radius: 16px;
+    /* Aún más redondeado */
+    box-shadow: var(--shadow-medium);
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 2.5fr 1.5fr;
+    /* Más espacio para el mapa */
+    gap: 35px;
+    /* Más espacio entre columnas */
+    transition: var(--transition-ease);
+    border: 1px solid var(--border-color);
+    flex-grow: 1;
+    overflow: hidden;
+    /* Para contener los elementos internos */
+}
+
+#scannerCard.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    padding: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    box-shadow: none;
+    overflow-y: hidden;
+    /* Previene scroll no deseado en fullscreen */
+}
+
+#scannerCard.fullscreen #mapContainer {
+    height: 75%;
+    /* Más espacio para el mapa en pantalla completa */
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#scannerCard.fullscreen #controls {
+    height: 25%;
+    /* Menos espacio para controles */
+    overflow-y: auto;
+    border-top: 1px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#scannerCard.fullscreen .route-analysis-container,
+#scannerCard.fullscreen #collectionRegisterContainer {
+    display: none !important;
+}
+
+
+/* Contenedor del Mapa */
+#mapContainer {
+    height: 650px;
+    /* Altura generosa para el mapa */
+    background-color: var(--background-color-dark);
+    border-radius: 10px;
+    /* Bordes redondeados para el mapa */
+    overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+    /* Sutil sombra interna */
+    transition: height 0.3s ease, border-radius 0.3s ease;
+}
+
+#realtimeMap {
+    height: 100%;
+    width: 100%;
+    border-radius: 10px;
+    /* Hereda el redondeo */
+}
+
+/* Controles */
+#controls {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    background-color: var(--background-color-light);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+    /* Sutil sombra interna */
+}
+
+.control-group {
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background-color: var(--card-background);
+    box-shadow: var(--shadow-light);
+    transition: var(--transition-ease);
+    border-left: 5px solid var(--primary-color);
+    /* Toque de color */
+}
+
+.control-group:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-3px);
+}
+
+.control-group h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    font-size: 1.4em;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.control-group h2::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background-color: var(--secondary-color);
+    /* Detalle de color en el borde */
+}
+
+/* Estado de la Conexión */
+#connectionStatus {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    /* Más audaz */
+    font-size: 1.15em;
+    color: var(--text-color-medium);
+}
+
+.status-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ccc;
+    border: 3px solid #999;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: var(--transition-ease);
+}
+
+.status-indicator.connected {
+    background-color: var(--success-color);
+    border-color: #4CAF50;
+    /* Verde más oscuro */
+    animation: pulse-green 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.status-indicator.connecting {
+    background-color: var(--accent-color);
+    border-color: #ffb300;
+    /* Naranja más oscuro */
+    animation: pulse-orange 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.status-indicator.disconnected {
+    background-color: var(--error-color);
+    border-color: #d32f2f;
+    /* Rojo más oscuro */
+    animation: pulse-red 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes pulse-green {
+    0% {
+        box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(102, 187, 106, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(102, 187, 106, 0);
+    }
+}
+
+@keyframes pulse-orange {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 193, 7, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    }
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(239, 83, 80, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 83, 80, 0);
+    }
+}
+
+/* Lista de Estados de Tachos */
+#tachosLiveStatus {
+    max-height: 280px;
+    /* Ligeramente más alto */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 8px;
+    /* Espacio para el scrollbar */
+}
+
+#tachosLiveStatus::-webkit-scrollbar {
+    width: 8px;
+}
+
+#tachosLiveStatus::-webkit-scrollbar-track {
+    background: var(--background-color-dark);
+    border-radius: 10px;
+}
+
+#tachosLiveStatus::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+    border: 2px solid var(--background-color-dark);
+}
+
+#tachosLiveStatus::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+
+.tacho-status-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+    /* Borde sólido para un look más limpio */
+    font-size: 0.95em;
+    background-color: var(--background-color-light);
+    border-radius: 6px;
+    padding: 10px 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: var(--transition-ease);
+}
+
+.tacho-status-item:last-child {
+    border-bottom: none;
+}
+
+.tacho-status-item:hover {
+    background-color: #fafafa;
+    transform: translateX(3px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tacho-status-item div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.tacho-status-item strong {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.status-text {
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    /* Para que el padding y border-radius funcionen bien */
+}
+
+/* Colores de estado de tachos */
+.status-Lleno {
+    color: var(--error-color);
+    background-color: rgba(239, 83, 80, 0.1);
+}
+
+.status-Alto {
+    color: var(--accent-color);
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.status-Medio {
+    color: #ffeb3b;
+    /* Amarillo */
+    background-color: rgba(255, 235, 59, 0.1);
+}
+
+.status-Bajo {
+    color: var(--success-color);
+    background-color: rgba(102, 187, 106, 0.1);
+}
+
+.status-Vacio {
+    color: #757575;
+    /* Gris oscuro */
+    background-color: rgba(117, 117, 117, 0.1);
+}
+
+.status-Desconocido {
+    color: #9e9e9e;
+    /* Gris */
+    background-color: rgba(158, 158, 158, 0.1);
+}
+
+/* Estilos para el input de ubicación */
+.input-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--text-color-dark);
+    font-size: 1em;
+}
+
+.text-input {
+    width: 100%;
+    /* Ajuste a 100% para que el padding sea interno */
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    /* Más redondeado */
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+}
+
+.location-info {
+    font-size: 0.9em;
+    color: var(--text-color-medium);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-color);
+    line-height: 1.5;
+}
+
+.info-message {
+    font-style: italic;
+    color: var(--info-color);
+    margin-top: 12px;
+    font-size: 0.95em;
+    background-color: rgba(41, 182, 246, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--info-color);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-weight: 600;
+    margin-top: 12px;
+    font-size: 0.95em;
+    background-color: rgba(239, 83, 80, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--error-color);
+}
+
+
+/* Botones */
+.button-group {
+    display: flex;
+    gap: 15px;
+    /* Más espacio entre botones */
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.action-btn {
+    padding: 14px 25px;
+    /* Más padding para botones */
+    border: none;
+    border-radius: 8px;
+    /* Más redondeado */
+    cursor: pointer;
+    font-size: 1.05em;
+    font-weight: 600;
+    transition: var(--transition-ease);
+    flex-grow: 1;
+    min-width: 140px;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    transition: all 0.4s ease-out;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    z-index: 0;
+}
+
+.action-btn:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.action-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+.primary-btn {
+    background: var(--gradient-primary);
+    /* Gradiente para el botón principal */
+    color: white;
+    box-shadow: var(--shadow-light);
+}
+
+.primary-btn:hover {
+    background: #5c6bc0;
+    /* Color sólido en hover para un efecto más limpio */
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.primary-btn.active {
+    background: var(--error-color);
+    box-shadow: 0 0 0 3px rgba(239, 83, 80, 0.3);
+}
+
+.primary-btn.active:hover {
+    background-color: #d32f2f;
+}
+
+
+.action-btn:disabled {
+    background-color: #cccccc;
+    color: #888888;
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.action-btn:disabled::before {
+    display: none;
+}
+
+.secondary-btn {
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    box-shadow: var(--shadow-light);
+}
+
+.secondary-btn:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.popup-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95em;
+    margin: 5px;
+    transition: var(--transition-ease);
+}
+
+.popup-btn.confirm {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.popup-btn.confirm:hover {
+    background-color: #5c6bc0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.popup-btn.cancel {
+    background-color: #f0f0f0;
+    color: var(--text-color-dark);
+    border: 1px solid var(--border-color);
+}
+
+.popup-btn.cancel:hover {
+    background-color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Análisis de Ruta y Registro de Recolección */
+.route-analysis-container,
+#collectionRegisterContainer {
+    /* Aplicar estilos comunes a ambos */
+    grid-column: 1 / -1;
+    background-color: var(--card-background);
+    border-radius: 16px;
+    box-shadow: var(--shadow-medium);
+    padding: 30px;
+    margin-top: 25px;
+    border: 1px solid var(--border-color);
+    transition: var(--transition-ease);
+}
+
+.route-analysis-container:hover,
+#collectionRegisterContainer:hover {
+    box-shadow: var(--shadow-heavy);
+    transform: translateY(-5px);
+}
+
+.route-analysis-container h2,
+#collectionRegisterContainer h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    font-size: 1.8em;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.route-analysis-container h2::after,
+#collectionRegisterContainer h2::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background-color: var(--secondary-color);
+}
+
+.summary-info {
+    background-color: var(--background-color-dark);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    box-shadow: var(--shadow-light);
+}
+
+.analysis-table-container {
+    max-height: 450px;
+    /* Ligeramente más alto */
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+    background-color: var(--card-background);
+    /* Asegura fondo blanco */
+}
+
+.analysis-table th,
+.analysis-table td {
+    padding: 15px 20px;
+    /* Más padding */
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.analysis-table th {
+    background: var(--gradient-primary);
+    /* Gradiente para el encabezado de la tabla */
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    letter-spacing: 0.5px;
+}
+
+.analysis-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.analysis-table tr:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.analysis-table td strong {
+    color: var(--secondary-color);
+}
+
+.analysis-table .recommendation {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Estilos específicos para el registro de recolección */
+.collection-register-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Controlado por el padding de los items */
+}
+
+.collection-register-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: var(--background-color-light);
+    transition: var(--transition-ease);
+    border-left: 5px solid transparent;
+    /* Para el efecto de hover */
+}
+
+.collection-register-item:last-child {
+    border-bottom: none;
+}
+
+.collection-register-item:hover {
+    background-color: #f0f0f0;
+    border-left-color: var(--secondary-color);
+    transform: translateX(5px);
+}
+
+.collection-register-item .priority-number {
+    font-weight: 700;
+    font-size: 1.8em;
+    color: var(--primary-color);
+    min-width: 45px;
+    text-align: center;
+    background-color: var(--background-color-dark);
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+}
+
+.collection-register-item .tacho-info {
+    flex-grow: 1;
+}
+
+.collection-register-item .tacho-info strong {
+    display: block;
+    font-size: 1.3em;
+    color: var(--text-color-dark);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.collection-register-item .tacho-info span {
+    font-size: 1em;
+    color: var(--text-color-medium);
+}
+
+
+/* Estilos de marcadores de Leaflet personalizados */
+.custom-div-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Centrar contenido dentro del icono */
+}
+
+.marker-pin {
+    width: 25px;
+    /* Más grande */
+    height: 25px;
+    /* Más grande */
+    background-color: #ccc;
+    border-radius: 50% 50% 50% 0;
+    position: relative;
+    transform: rotate(-45deg);
+    border: 3px solid #555;
+    /* Borde más grueso */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    transition: var(--transition-ease);
+}
+
+.marker-pin:hover {
+    transform: rotate(-45deg) scale(1.1);
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Colores para el pin del marcador */
+.marker-pin.status-Lleno {
+    background-color: var(--error-color);
+    border-color: #c62828;
+}
+
+.marker-pin.status-Alto {
+    background-color: var(--accent-color);
+    border-color: #e65100;
+}
+
+.marker-pin.status-Medio {
+    background-color: #ffeb3b;
+    /* Amarillo vibrante */
+    border-color: #fbc02d;
+}
+
+.marker-pin.status-Bajo {
+    background-color: var(--success-color);
+    border-color: #558b2f;
+}
+
+.marker-pin.status-Vacio {
+    background-color: #9e9e9e;
+    /* Gris */
+    border-color: #616161;
+}
+
+.marker-pin.status-Desconocido {
+    background-color: #78909c;
+    /* Azul grisáceo */
+    border-color: #455a64;
+}
+
+.marker-pin.user-location-pin {
+    background-color: var(--secondary-color);
+    border-color: #4527a0;
+    box-shadow: 0 0 15px rgba(103, 58, 183, 0.7);
+    /* Sombra más pronunciada */
+    animation: pulse-user 2s infinite ease-out;
+    /* Nueva animación para el usuario */
+}
+
+@keyframes pulse-user {
+    0% {
+        box-shadow: 0 0 0 0 rgba(103, 58, 183, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(103, 58, 183, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(103, 58, 183, 0);
+    }
+}
+
+
+.marker-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    /* Más espacio */
+    background-color: rgba(33, 33, 33, 0.85);
+    /* Fondo más oscuro para mejor contraste */
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 0.85em;
+    /* Ligeramente más grande */
+    font-weight: 600;
+    pointer-events: none;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.custom-div-icon:hover .marker-label {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(3px);
+    /* Efecto de subir */
+}
+
+/* Estilos para el icono de ruta */
+.custom-route-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    /* Más grande */
+    height: 35px;
+    /* Más grande */
+    background-color: var(--secondary-color);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1em;
+    border: 3px solid #4527a0;
+    /* Borde más grueso y oscuro */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    transition: var(--transition-ease);
+}
+
+.custom-route-icon:hover {
+    transform: scale(1.1);
+    background-color: var(--primary-color);
+}
+
+.custom-route-icon .route-marker-label {
+    position: static;
+    transform: none;
+    background-color: transparent;
+    color: white;
+    padding: 0;
+    font-size: 1.1em;
+    opacity: 1;
+    /* Siempre visible */
+    visibility: visible;
+    /* Siempre visible */
+}
+
+/* Estilos de Popup de Tacho (para Leaflet) */
+.tacho-popup-content {
+    font-family: 'Roboto', sans-serif;
+    color: var(--text-color-dark);
+    max-width: 280px;
+    /* Ancho máximo para popups */
+}
+
+.tacho-popup-content h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--primary-color);
+    font-size: 1.4em;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+    font-weight: 600;
+}
+
+.tacho-popup-content p {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.tacho-popup-content strong {
+    color: var(--text-color-dark);
+    /* Hacer el texto fuerte más oscuro */
+    font-weight: 500;
+}
+
+.tacho-popup-content .status-text {
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.tacho-images {
+    display: flex;
+    gap: 8px;
+    /* Más espacio */
+    margin-top: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.tacho-images img {
+    width: 80px;
+    /* Más grande */
+    height: 80px;
+    /* Más grande */
+    object-fit: cover;
+    border-radius: 8px;
+    /* Más redondeado */
+    border: 2px solid var(--border-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.tacho-images img:hover {
+    transform: scale(1.05);
+}
+
+.tacho-images .more-images-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background-color: var(--background-color-dark);
+    border-radius: 8px;
+    font-size: 1em;
+    color: var(--text-color-medium);
+    border: 2px solid var(--border-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tacho-images .more-images-count:hover {
+    background-color: #e0e0e0;
+}
+
+.map-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 18px;
+    background-color: var(--secondary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: var(--shadow-light);
+}
+
+.map-link:hover {
+    background-color: #4527a0;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.location-confirm-popup {
+    text-align: center;
+    padding: 10px;
+}
+
+.location-confirm-popup p {
+    margin: 10px 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: var(--text-color-dark);
+}
+
+.location-confirm-popup .popup-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+
+/* Media Queries para Responsividad */
+@media (max-width: 1024px) {
+
+    /* Tabletas y pantallas pequeñas de escritorio */
+    .container {
+        max-width: 960px;
+        padding: 20px;
+    }
+
+    #scannerCard {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        padding: 25px;
+    }
+
+    #mapContainer {
+        height: 500px;
+    }
+
+    #mainHeader h1 {
+        font-size: 2.2em;
+    }
+
+    .control-group h2 {
+        font-size: 1.3em;
+    }
+
+    .action-btn {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .route-analysis-container,
+    #collectionRegisterContainer {
+        padding: 25px;
+    }
+
+    .route-analysis-container h2,
+    #collectionRegisterContainer h2 {
+        font-size: 1.6em;
+    }
+
+    .analysis-table th,
+    .analysis-table td {
+        padding: 12px 15px;
+        font-size: 0.9em;
+    }
+}
+
+
+@media (max-width: 768px) {
+
+    /* Móviles y tabletas pequeñas */
+    body {
+        padding: 15px;
+    }
+
+    .container {
+        gap: 20px;
+    }
+
+    #mainHeader {
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    #mainHeader h1 {
+        font-size: 1.8em;
+    }
+
+    #scannerCard {
+        padding: 20px;
+        gap: 20px;
+        border-radius: 12px;
+    }
+
+    #scannerCard.fullscreen #mapContainer {
+        height: 65%;
+    }
+
+    #scannerCard.fullscreen #controls {
+        height: 35%;
+    }
+
+    #mapContainer {
+        height: 350px;
+        border-radius: 8px;
+    }
+
+    #controls {
+        padding: 20px;
+        gap: 20px;
+        border-radius: 8px;
+    }
+
+    .control-group {
+        padding: 15px;
+        border-radius: 8px;
+        border-left-width: 4px;
+    }
+
+    .control-group h2 {
+        font-size: 1.2em;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    #tachosLiveStatus {
+        max-height: 200px;
+        gap: 10px;
+    }
+
+    .tacho-status-item {
+        padding: 8px 10px;
+        border-radius: 4px;
+    }
+
+    .text-input {
+        padding: 10px 12px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+    }
+
+    .action-btn {
+        padding: 12px 20px;
+        font-size: 0.95em;
+        border-radius: 6px;
+    }
+
+    .popup-btn {
+        padding: 8px 15px;
+        font-size: 0.85em;
+        border-radius: 5px;
+    }
+
+    .route-analysis-container,
+    #collectionRegisterContainer {
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 12px;
+    }
+
+    .route-analysis-container h2,
+    #collectionRegisterContainer h2 {
+        font-size: 1.4em;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+    }
+
+    .summary-info {
+        padding: 15px;
+        font-size: 1.05em;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .analysis-table-container {
+        max-height: 300px;
+        border-radius: 8px;
+    }
+
+    .analysis-table th,
+    .analysis-table td {
+        padding: 10px 12px;
+        font-size: 0.85em;
+    }
+
+    .analysis-table th:nth-child(4),
+    /* Ocultar "Ubicación Detallada" en móvil */
+    .analysis-table td:nth-child(4) {
+        display: none;
+    }
+
+    .analysis-table th:nth-child(5),
+    /* Ocultar "Distancia desde Inicio" en móvil si es necesario */
+    .analysis-table td:nth-child(5) {
+        /* display: none; */
+    }
+
+    .collection-register-item {
+        padding: 10px 15px;
+        gap: 15px;
+    }
+
+    .collection-register-item .priority-number {
+        font-size: 1.5em;
+        min-width: 35px;
+        padding: 5px 10px;
+        border-radius: 6px;
+    }
+
+    .collection-register-item .tacho-info strong {
+        font-size: 1.1em;
+    }
+
+    .collection-register-item .tacho-info span {
+        font-size: 0.9em;
+    }
+
+    .marker-pin {
+        width: 20px;
+        height: 20px;
+        border-width: 2px;
+    }
+
+    .marker-label {
+        font-size: 0.75em;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transform: translateX(-50%) translateY(5px);
+    }
+
+    .custom-div-icon:hover .marker-label {
+        transform: translateX(-50%) translateY(2px);
+    }
+
+    .custom-route-icon {
+        width: 30px;
+        height: 30px;
+        border-width: 2px;
+        font-size: 0.9em;
+    }
+
+    .tacho-popup-content {
+        max-width: 250px;
+    }
+
+    .tacho-popup-content h3 {
+        font-size: 1.2em;
+    }
+
+    .tacho-images img,
+    .tacho-images .more-images-count {
+        width: 60px;
+        height: 60px;
+        border-radius: 6px;
+    }
+
+    .map-link {
+        padding: 8px 15px;
+        font-size: 0.85em;
+        border-radius: 4px;
+    }
+}
+
+/* Fuentes de Google Fonts (añadir al HTML en la sección <head>) */
+/*
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+*/

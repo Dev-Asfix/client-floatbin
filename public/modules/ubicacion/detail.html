@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlotaBin IA - Ubicación Detalle</title>
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="icon" href="../../images/Robot.png" type="image/x-icon" />
+    <style>
+      /* Estilos específicos para la vista de detalle */
+      body {
+        background-color: #0c1a28; /* Fondo muy oscuro, ligeramente azulado */
+        color: #e0f2f7; /* Texto blanco azulado suave */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 30px; /* Aumentado para mejor espaciado */
+        box-sizing: border-box;
+        position: relative; /* Necesario para los pseudo-elementos fijos */
+        overflow-x: hidden; /* Evita el scroll horizontal */
+      }
+
+      /* Pseudo-elemento para el fondo animado que cambiará las imágenes y tendrá blur */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover; /* Las imágenes cubren todo el espacio */
+        opacity: 0.3; /* Opacidad reducida para un efecto más sutil */
+        z-index: -1; /* Detrás de todo el contenido */
+        pointer-events: none; /* Asegura que no interfiera con interacciones */
+        filter: blur(5px); /* ¡El efecto BLUR para el fondo! */
+
+        /* Animación para cambiar las imágenes de fondo */
+        animation: changeBackground 45s infinite ease-in-out; /* Duración total del ciclo */
+        transition: background-image 1.5s ease-in-out, opacity 1.5s ease-in-out; /* Transición suave entre imágenes y opacidad */
+      }
+
+      /* Overlay de gradiente adicional para un toque más moderno y cohesivo */
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at top left,
+            rgba(64, 224, 208, 0.08) 0%,
+            transparent 40%
+          ),
+          /* Turquesa/cian suave */
+            radial-gradient(
+              circle at bottom right,
+              rgba(70, 130, 180, 0.08) 0%,
+              transparent 40%
+            ); /* Azul acero suave */
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* Keyframes para la animación de cambio de imagen de fondo */
+      @keyframes changeBackground {
+        0% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        15% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        25% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        33% {
+          background-image: url("/images/fondo2.jpg");
+          opacity: 0.3;
+        }
+        48% {
+          background-image: url("/images/fondo2.jpg");
+          opacity: 0.3;
+        }
+        58% {
+          background-image: url("/images/fondo5.jpg");
+          opacity: 0.3;
+        }
+        73% {
+          background-image: url("/images/fondo5.jpg");
+          opacity: 0.3;
+        }
+        83% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        100% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+      }
+
+      /* Contenedor principal de detalles */
+      .detail-container {
+        background-color: rgba(
+          18,
+          30,
+          48,
+          0.7
+        ); /* Fondo oscuro semitransparente */
+        border: 1px solid rgba(40, 60, 80, 0.5); /* Borde sutil */
+        border-radius: 20px; /* Más redondeado */
+        padding: 40px; /* Más padding para aire */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Sombra más suave y profunda */
+        width: 95%; /* Más ancho */
+        max-width: 1200px; /* Ancho máximo aumentado */
+        display: grid;
+        grid-template-columns: 1fr; /* Una columna por defecto */
+        gap: 40px; /* Más espacio entre secciones */
+        margin-top: 50px; /* Más espacio superior */
+        backdrop-filter: blur(
+          12px
+        ); /* ¡Mucho blur para el efecto de vidrio esmerilado! */
+        transition: transform 0.5s ease-out, opacity 0.5s ease-out; /* Transición de aparición */
+        opacity: 0; /* Empieza oculto para la animación */
+        transform: translateY(20px); /* Empieza ligeramente debajo */
+        animation: fadeInSlideUp 0.8s forwards ease-out; /* Animación de carga */
+      }
+
+      @keyframes fadeInSlideUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Media Query para la nueva disposición en pantallas medianas y grandes */
+      @media (min-width: 768px) {
+        .detail-container {
+          /* info al lado de gallery, y map abajo ocupando todo el ancho */
+          grid-template-columns: 1fr 1.5fr; /* Info a la izquierda, Galería/Imágenes a la derecha (más ancha) */
+          grid-template-areas:
+            "info gallery"
+            "map map"; /* Mapa abajo, ocupando ambas columnas */
+        }
+      }
+      @media (min-width: 1024px) {
+        .detail-container {
+          grid-template-columns: 1fr 2fr; /* Galería aún más ancha en pantallas grandes */
+        }
+      }
+
+      /* Sección de Información */
+      .info-section {
+        grid-area: info; /* Asigna al área 'info' */
+        display: flex;
+        flex-direction: column;
+        gap: 20px; /* Más espacio entre párrafos */
+        text-align: left; /* Alineado a la izquierda para mejor lectura */
+        /* Eliminar padding-right si la galería está al lado, o ajustarlo si es necesario */
+      }
+
+      .info-section h2 {
+        font-size: 3em; /* Título más grande */
+        color: #87ceeb; /* Azul cielo suave */
+        text-shadow: 0 0 8px rgba(135, 206, 235, 0.5); /* Sombra suave */
+        margin-bottom: 15px; /* Más espacio */
+        line-height: 1.2;
+      }
+
+      .info-section p {
+        font-size: 1.25em; /* Un poco más grande */
+        line-height: 1.7; /* Mejor legibilidad */
+        color: #cce0e8; /* Color de texto más claro y suave */
+      }
+
+      .info-section strong {
+        color: #98fb98; /* Verde menta suave para resaltar */
+        font-weight: 600; /* Un poco más grueso */
+      }
+
+      /* --- ESTILOS PARA EL CARRUSEL DE IMÁGENES --- */
+      .image-gallery {
+        grid-area: gallery; /* Asigna al área 'gallery' */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px; /* Más espacio */
+        position: relative; /* Para posicionar los botones de navegación */
+      }
+
+      .carousel-container {
+        position: relative;
+        width: 100%;
+        max-width: 700px; /* Tamaño principal para el carrusel */
+        /* Asegura una proporción fija para el carrusel principal */
+        aspect-ratio: 16 / 9; /* Ejemplo: 16:9 de ancho por alto */
+        border: 1px solid rgba(102, 205, 170, 0.6); /* Borde cian claro */
+        border-radius: 15px;
+        overflow: hidden; /* Oculta las imágenes fuera de vista */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5),
+          0 0 15px rgba(102, 205, 170, 0.4); /* Sombra más pronunciada */
+        background-color: rgba(0, 0, 0, 0.2); /* Fondo sutil */
+      }
+
+      .carousel-slides {
+        display: flex;
+        width: 100%; /* El ancho total será el número de slides * 100% */
+        height: 100%;
+        overflow-x: scroll; /* Permite el deslizamiento horizontal */
+        scroll-snap-type: x mandatory; /* Fuerza el "snap" a cada slide */
+        scroll-behavior: smooth; /* Desplazamiento suave al navegar */
+        -webkit-overflow-scrolling: touch; /* Mejora el scroll táctil en iOS */
+        scrollbar-width: none; /* Oculta la barra de desplazamiento en Firefox */
+      }
+
+      .carousel-slides::-webkit-scrollbar {
+        display: none; /* Oculta la barra de desplazamiento en WebKit (Chrome, Safari) */
+      }
+
+      .carousel-slide {
+        flex-shrink: 0; /* Evita que las imágenes se encojan */
+        width: 100%; /* Cada slide ocupa el 100% del contenedor visible */
+        height: 100%;
+        scroll-snap-align: start; /* Alinea el inicio del slide al punto de "snap" */
+        display: flex; /* Para centrar la imagen dentro del slide */
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(
+          0,
+          0,
+          0,
+          0.1
+        ); /* Fondo si la imagen no carga o es transparente */
+      }
+
+      .carousel-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Las imágenes cubrirán todo el espacio, recortando si es necesario */
+        display: block;
+        /* Transiciones para suavizar cambios si las imágenes se cargan dinámicamente */
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      }
+
+      .carousel-nav-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(40, 60, 80, 0.8);
+        color: #e0f2f7;
+        border: none;
+        /* padding: 10px 15px; /* Eliminar padding para usar width/height */
+        width: 45px; /* Ancho fijo para el botón */
+        height: 45px; /* Alto fijo para el botón */
+        display: flex; /* Usar flexbox para centrar el contenido (la flecha) */
+        justify-content: center; /* Centrar horizontalmente */
+        align-items: center; /* Centrar verticalmente */
+        cursor: pointer;
+        font-size: 2em;
+        font-weight: bold;
+        border-radius: 50%; /* Asegura que sea un círculo */
+        z-index: 10; /* Asegura que estén por encima de las imágenes */
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        user-select: none; /* Evita selección de texto */
+        /* line-height: 1; /* Asegura que el texto (flecha) no se estire verticalmente */
+        /* Eliminar line-height si usas flexbox para centrar */
+      }
+
+      .carousel-nav-button:hover {
+        background-color: rgba(60, 80, 100, 0.9);
+        transform: translateY(-50%) scale(1.1);
+      }
+
+      .carousel-nav-button.prev {
+        left: 10px;
+      }
+
+      .carousel-nav-button.next {
+        right: 10px;
+      }
+
+      .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px; /* Espacio debajo del carrusel */
+      }
+
+      .carousel-dot {
+        width: 12px;
+        height: 12px;
+        background-color: rgba(224, 242, 247, 0.4);
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+      }
+
+      .carousel-dot.active,
+      .carousel-dot:hover {
+        background-color: #87ceeb; /* Azul cielo suave */
+        transform: scale(1.2);
+      }
+
+      /* Contenedor de miniaturas - Se mantiene similar, pero ahora solo para thumbnails */
+      .image-gallery .thumbnail-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px; /* Más espacio entre miniaturas */
+        width: 100%;
+        max-width: 700px; /* Coincide con el ancho máximo del carrusel */
+      }
+
+      .image-gallery .thumbnail {
+        width: 120px; /* Miniaturas más grandes */
+        height: 90px;
+        object-fit: cover; /* Cubre el espacio, recortando si es necesario */
+        border: 2px solid rgba(135, 206, 235, 0.5); /* Borde azul cielo suave */
+        border-radius: 8px; /* Más redondeado */
+        cursor: pointer;
+        transition: transform 0.3s ease, border-color 0.3s ease,
+          box-shadow 0.3s ease, filter 0.3s ease; /* Añadimos transición al filtro */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.459); /* Sombra sutil */
+        opacity: 0; /* Oculto para la animación de entrada */
+        transform: scale(0.8); /* Empieza más pequeño */
+        animation: scaleIn 0.5s forwards ease-out; /* Animación de entrada */
+        filter: brightness(0.3); /* Aplicamos un filtro de oscuridad */
+      }
+
+      /* Retraso para la animación de entrada de cada miniatura */
+      .image-gallery .thumbnail:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .image-gallery .thumbnail:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .image-gallery .thumbnail:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .image-gallery .thumbnail:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      /* Añade más nth-child si tienes más miniaturas */
+
+      @keyframes scaleIn {
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      image-gallery .thumbnail:hover,
+      .image-gallery .thumbnail.active {
+        transform: scale(1.08); /* Ligeramente más grande al hover/activo */
+        border-color: #6a5acd; /* Azul lavanda al hover/activo */
+        box-shadow: 0 0 15px rgba(106, 90, 205, 0.6); /* Sombra más fuerte al hover/activo */
+        filter: brightness(
+          1
+        ); /* Revertimos el brillo al hacer hover o estar activo */
+      }
+
+      /* Sección del Mapa (ahora abajo, ocupando todo el ancho) */
+      .map-section {
+        grid-area: map; /* Asigna al área 'map' */
+        border: 1px solid rgba(106, 90, 205, 0.5); /* Borde azul lavanda suave */
+        border-radius: 15px; /* Más redondeado */
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4),
+          0 0 15px rgba(106, 90, 205, 0.3); /* Sombra más sutil y profunda */
+        background-color: rgba(
+          0,
+          0,
+          0,
+          0.2
+        ); /* Fondo sutil para el mapa si no carga */
+        margin-top: 20px; /* Espacio superior para separarlo de las secciones de arriba */
+      }
+
+      .map-section iframe {
+        width: 100%;
+        height: 450px; /* Altura generosa para el mapa */
+        border: none;
+        display: block; /* Elimina espacio extra debajo del iframe */
+      }
+
+      /* Mensaje de no encontrado */
+      .not-found-message {
+        font-size: 2.2em; /* Más grande */
+        color: #ff8c00; /* Naranja oscuro, menos agresivo */
+        text-align: center;
+        margin-top: 60px;
+        text-shadow: 0 0 8px rgba(255, 140, 0, 0.5); /* Sombra más suave */
+      }
+
+      /* Media Queries para responsividad */
+      @media (max-width: 992px) {
+        .detail-container {
+          padding: 30px;
+          gap: 30px;
+        }
+        .info-section h2 {
+          font-size: 2.5em;
+        }
+        .info-section p {
+          font-size: 1.15em;
+        }
+        .map-section iframe {
+          height: 380px;
+        }
+        .carousel-container,
+        .image-gallery .thumbnail-container {
+          max-width: 600px;
+        }
+        .image-gallery .thumbnail-container {
+          gap: 15px;
+        }
+        .image-gallery .thumbnail {
+          width: 100px;
+          height: 75px;
+        }
+      }
+
+      @media (max-width: 767px) {
+        .detail-container {
+          grid-template-columns: 1fr; /* Una columna en celulares */
+          grid-template-areas:
+            "info"
+            "gallery"
+            "map"; /* Orden vertical: Info, Galería, Mapa */
+          padding: 25px;
+          margin-top: 30px;
+        }
+        .info-section {
+          text-align: center; /* Centra texto en móviles */
+        }
+        .info-section h2 {
+          font-size: 2em;
+        }
+        .info-section p {
+          font-size: 1em;
+        }
+        .map-section iframe {
+          height: 300px; /* Altura más compacta para móviles */
+          margin-top: 0; /* Eliminar margen superior en móvil si no es necesario */
+        }
+        .image-gallery {
+          margin-top: 20px;
+          padding-top: 0; /* No hay separador si no está al lado */
+          gap: 15px;
+        }
+        .carousel-container {
+          max-width: 100%; /* Ocupa todo el ancho disponible */
+          aspect-ratio: 4 / 3; /* Un poco más cuadrado para móviles */
+        }
+        .image-gallery .thumbnail-container {
+          gap: 10px;
+        }
+        .image-gallery .thumbnail {
+          width: 80px;
+          height: 60px;
+        }
+        .not-found-message {
+          font-size: 1.8em;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 15px;
+        }
+        .detail-container {
+          padding: 20px;
+          gap: 20px;
+        }
+        .info-section h2 {
+          font-size: 1.8em;
+        }
+        .info-section p {
+          font-size: 0.95em;
+        }
+        .map-section iframe {
+          height: 250px;
+        }
+        .image-gallery .thumbnail {
+          width: 70px;
+          height: 50px;
+        }
+        .not-found-message {
+          font-size: 1.5em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="detail-container" id="detailContainer"></div>
+
+    <p class="not-found-message" id="notFoundMessage" style="display: none">
+      No se encontró información de ubicación para el tacho solicitado.
+    </p>
+
+    <script type="module" src="./js/ubicacion-detail.js"></script>
+  </body>
+</html>

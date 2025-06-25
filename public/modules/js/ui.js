@@ -1,5 +1,5 @@
-// js/ui.js
-import { formatTiempo } from './state.js'; // Import formatTiempo from state.js
+// public/modules/js/ui.js
+import { formatTiempo } from './state.js'; // Ruta ajustada
 
 export const updatePredictionDisplay = (averageFillTime) => {
     const prediccionElement = document.getElementById("prediccionLlenado");
@@ -10,10 +10,10 @@ export const updatePredictionDisplay = (averageFillTime) => {
         applyNoBackgroundStyle(prediccionElement);
         prediccionElement.textContent = `Llenado estimado en ${formatTiempo(averageFillTime)}.`;
         waterEffect.classList.remove("filling");
-        sparksEffect.innerHTML = ""; // Clear sparks when there's data
+        sparksEffect.innerHTML = ""; // Limpiar chispas cuando hay datos
     } else {
         applyBackgroundStyle(prediccionElement);
-        prediccionElement.textContent = `Alimentando Redes Neuronales.`; // Changed from 3 to 2 for consistency with calculateAdaptiveAverage
+        prediccionElement.textContent = `Alimentando Redes Neuronales.`;
         waterEffect.classList.add("filling");
         generateSparks(sparksEffect);
     }
@@ -50,20 +50,14 @@ const generateSparks = (sparksEffect) => {
 };
 
 /**
- * Updates the sensor data display in the UI.
- * @param {object} data - Object containing sensor data (estado, distancia, timestamp).
+ * Actualiza la visualización de los datos del sensor en la UI.
+ * @param {object} data - Objeto que contiene los datos del sensor (estado, distancia, timestamp).
  */
 export const updateSensorData = (data) => {
-    const localDate = new Date().toLocaleString(); // Use current local time for display
+    const localDate = new Date().toLocaleString(); // Usar la hora local actual para la visualización
     document.getElementById("estado").innerText = `Estado: ${data.estado}`;
     document.getElementById("distancia").innerText = `Distancia: ${data.distancia} cm`;
-    document.getElementById("fecha").innerText = `Fecha y Hora: ${localDate}`; // Display local date/time
-    // Note: averageFillTime is updated by calculateAdaptiveAverage, not here directly.
-    // document.getElementById("averageFillTime").innerText = `Promedio: --`; // This line should be removed or handled by calculateAdaptiveAverage directly
-
-    if (data.alert) {
-        document.getElementById("alerta").innerText = data.alert;
-    }
+    document.getElementById("fecha").innerText = `Fecha y Hora: ${localDate}`;
 };
 
 export const updateTrashCanVisual = (estado) => {

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💦FlotaBin IA - Detalle del Tacho</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" href="../images/Robot.png" type="image/x-icon" />
+  </head>
+  <body>
+    <div class="container-principal">
+      <div class="left-section">
+        <h2 id="h2e">FlotaBin IA</h2>
+        <div class="content">
+          <div class="tacho">
+            <div id="nivel" class="nivel"></div>
+          </div>
+          <div class="info">
+            <p id="estado">Estado: --</p>
+            <p id="distancia">Distancia: -- cm</p>
+            <p id="fecha">Fecha y Hora: --</p>
+            <p id="alerta" class="alerta"></p>
+          </div>
+        </div>
+
+        <div class="audio-container" id="audioContainer">
+          <div class="audio-icon"></div>
+          <audio id="audioPlayer" controls></audio>
+        </div>
+      </div>
+
+      <div class="right-section">
+        <div class="guardar">
+          <button id="guardadito" onclick="window.location.href='#'">ML</button>
+
+          <div id="recommendations">
+            <div class="analysis">
+              <h2>Recomendaciones</h2>
+              <p id="mensajeRecomendacion">Esperando datos...</p>
+            </div>
+          </div>
+          <div id="recommendations">
+            <div class="analysis">
+              <h2>Predicciones</h2>
+              <p id="prediccionLlenado">Esperando datos...</p>
+              <div id="waterEffect"></div>
+              <div class="sparks" id="sparksEffect"></div>
+            </div>
+          </div>
+        </div>
+        <div class="analysis">
+          <p id="averageFillTime">Promedio: -- segundos</p>
+        </div>
+
+        <div class="table-section">
+          <h2>Duración de los estados</h2>
+          <div class="tablita">
+            <table>
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Duración</th>
+                </tr>
+              </thead>
+              <tbody id="estadoTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./js/tacho.js"></script>
+    <script type="module" src="./js/websocket.js"></script>
+    <script type="module" src="./js/ui.js"></script>
+    <script type="module" src="./js/state.js"></script>
+    <script type="module" src="./js/audio.js"></script>
+  </body>
+</html>

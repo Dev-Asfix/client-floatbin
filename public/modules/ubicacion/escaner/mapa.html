@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mapa en Tiempo Real</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+
+      .button-container {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        background-color: #4f46e5;
+        color: white;
+        font-size: 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #4338ca;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="button-container">
+      <button onclick="iniciarUbicacion()">
+        📍 Activar ubicación en tiempo real
+      </button>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      let map = L.map("map").setView([-12.0464, -77.0428], 13); // Punto inicial: Lima
+      let marker = null;
+      let watchId = null;
+
+      // Capa base de OpenStreetMap
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      function iniciarUbicacion() {
+        if (!navigator.geolocation) {
+          alert("Tu navegador no soporta geolocalización.");
+          return;
+        }
+
+        // Limpiar si ya hay un seguimiento activo
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+        }
+
+        watchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            // Mover el mapa a la nueva posición
+            map.setView([lat, lng], 16);
+
+            // Crear o mover el marcador
+            if (!marker) {
+              marker = L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup("📍 Estás aquí")
+                .openPopup();
+            } else {
+              marker.setLatLng([lat, lng]);
+            }
+          },
+          (error) => {
+            console.error("Error de geolocalización:", error);
+            alert("No se pudo obtener tu ubicación.");
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 10000,
+            timeout: 5000,
+          }
+        );
+      }
+    </script>
+  </body>
+</html>

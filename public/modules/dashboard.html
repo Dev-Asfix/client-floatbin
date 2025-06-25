@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlotaBin IA - Dashboard</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="icon" href="../images/Robot.png" type="image/x-icon" />
+    <style>
+      /* Estilos generales para el cuerpo */
+      body {
+        background-color: #0c1521; /* Fondo muy oscuro, casi azul profundo */
+        color: #e0f2f7; /* Texto blanco azulado, menos neón */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 30px;
+        box-sizing: border-box;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Pseudo-elemento para el fondo animado que cambiará las imágenes */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        opacity: 0.4; /* Opacidad reducida para un efecto más sutil y "de fondo" */
+        z-index: -1;
+        pointer-events: none;
+
+        animation: changeBackground 45s infinite ease-in-out;
+        transition: background-image 1s ease-in-out, opacity 1s ease-in-out; /* Transición suave entre imágenes */
+      }
+
+      /* Overlay de gradiente adicional para un toque más moderno y cohesivo */
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at top left,
+            rgba(64, 224, 208, 0.08) 0%,
+            transparent 40%
+          ),
+          /* Turquesa/cian suave */
+            radial-gradient(
+              circle at bottom right,
+              rgba(70, 130, 180, 0.08) 0%,
+              transparent 40%
+            ); /* Azul acero suave */
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* Keyframes para la animación de cambio de imagen de fondo */
+      @keyframes changeBackground {
+        0% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.4;
+        }
+        15% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.4;
+        }
+        25% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.4;
+        }
+        33% {
+          background-image: url("/images/fondo2.jpg");
+          opacity: 0.4;
+        }
+        48% {
+          background-image: url("/images/fondo2.jpg");
+          opacity: 0.4;
+        }
+        58% {
+          background-image: url("/images/fondo5.jpg");
+          opacity: 0.4;
+        }
+        73% {
+          background-image: url("/images/fondo5.jpg");
+          opacity: 0.4;
+        }
+        83% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.4;
+        }
+        100% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.4;
+        }
+      }
+
+      /* Encabezado del Dashboard */
+      .dashboard-header {
+        text-align: center;
+        margin-bottom: 50px; /* Más espacio */
+        width: 90%;
+        max-width: 1100px; /* Un poco más ancho */
+        background-color: rgba(18, 30, 48, 0.7); /* Fondo más oscuro y sutil */
+        padding: 40px; /* Más padding */
+        border-radius: 20px; /* Más redondeado */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); /* Sombra más profunda */
+        border: 1px solid rgba(40, 60, 80, 0.5); /* Borde más suave */
+        backdrop-filter: blur(
+          8px
+        ); /* Más blur para un efecto de vidrio esmerilado */
+        position: relative; /* Para el posible efecto de "brillo" */
+      }
+
+      .dashboard-header h1 {
+        font-size: 4em; /* Título aún más grande */
+        color: #87ceeb; /* Azul cielo suave, menos "neón" */
+        text-shadow: 0 0 10px rgba(135, 206, 235, 0.6),
+          0 0 20px rgba(173, 216, 230, 0.4); /* Sombra suave */
+        animation: softGlow 3s ease-in-out infinite alternate; /* Animación de brillo más suave */
+        margin-bottom: 25px; /* Más espacio debajo del título */
+      }
+
+      @keyframes softGlow {
+        from {
+          text-shadow: 0 0 8px rgba(135, 206, 235, 0.5),
+            0 0 15px rgba(173, 216, 230, 0.3);
+        }
+        to {
+          text-shadow: 0 0 12px rgba(135, 206, 235, 0.7),
+            0 0 25px rgba(173, 216, 230, 0.5);
+        }
+      }
+
+      /* Contenedor de búsqueda */
+      .search-container {
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        width: 80%;
+        max-width: 650px; /* Un poco más ancho */
+      }
+
+      .search-container input {
+        padding: 18px 30px; /* Más padding */
+        border: 1px solid #4682b4; /* Azul acero, menos neón */
+        border-radius: 12px; /* Más redondeado */
+        background-color: rgba(26, 52, 77, 0.6); /* Más oscuro y transparente */
+        color: #e0f2f7;
+        font-size: 1.2em; /* Más grande */
+        flex-grow: 1;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4); /* Sombra interior suave */
+        transition: all 0.4s ease;
+        backdrop-filter: blur(3px); /* Pequeño blur en el input */
+      }
+
+      .search-container input::placeholder {
+        color: #87ceeb; /* Placeholder más suave */
+        opacity: 0.7;
+      }
+
+      .search-container input:focus {
+        outline: none;
+        border-color: #6a5acd; /* Azul lavanda al enfocar */
+        box-shadow: 0 0 10px rgba(106, 90, 205, 0.6),
+          inset 0 0 10px rgba(106, 90, 205, 0.4); /* Sombra de foco más suave */
+        background-color: rgba(
+          26,
+          52,
+          77,
+          0.8
+        ); /* Un poco más opaco al enfocar */
+      }
+
+      /* Grid de tachos */
+      .tacho-grid {
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(300px, 1fr)
+        ); /* Adjusted minmax for better desktop scaling */
+        gap: 45px; /* Más espacio */
+        padding: 40px; /* Más padding */
+        width: 95%;
+        max-width: 1500px; /* Ancho máximo aumentado */
+      }
+
+      /* Tarjeta individual de tacho */
+      .tacho-card {
+        background-color: rgba(
+          26,
+          52,
+          77,
+          0.7
+        ); /* Menos opaco, más transparente para el blur */
+        border: 1px solid rgba(70, 130, 180, 0.4); /* Borde más suave */
+        border-radius: 20px; /* Aún más redondeado */
+        padding: 35px; /* Más padding */
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4),
+          0 0 0px rgba(70, 130, 180, 0.2); /* Sombra más sutil y de profundidad */
+        transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out,
+          background-color 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 280px; /* Reduced min-height slightly for better scaling */
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px); /* ¡Más blur para el efecto de vidrio! */
+        border-top: 1px solid rgba(255, 255, 255, 0.1); /* Efecto de brillo superior */
+        border-left: 1px solid rgba(255, 255, 255, 0.1); /* Efecto de brillo izquierdo */
+      }
+
+      /* Efecto de "escáner de ubicación" al hacer hover en la tarjeta */
+      .tacho-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(106, 90, 205, 0.15) 20%,
+          /* Azul lavanda suave */ rgba(106, 90, 205, 0.3) 50%,
+          /* Centro más brillante */ rgba(106, 90, 205, 0.15) 80%,
+          transparent 100%
+        );
+        transform: translateY(-100%); /* Comienza por encima de la tarjeta */
+        transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+          opacity 0.8s ease-out; /* Curva de animación más dinámica */
+        opacity: 0; /* Oculto por defecto */
+        z-index: 0;
+        pointer-events: none; /* Asegura que no bloquee interacciones */
+      }
+
+      .tacho-card:hover::before {
+        transform: translateY(100%); /* Se desliza hacia abajo */
+        opacity: 1; /* Aparece y se desliza */
+      }
+
+      .tacho-card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .tacho-card:hover {
+        transform: translateY(-10px) scale(1.03);
+        background-color: rgba(
+          30,
+          60,
+          90,
+          0.8
+        ); /* Un poco más oscuro y opaco al hover */
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6),
+          0 0 15px rgba(70, 130, 180, 0.5); /* Sombra más pronunciada */
+      }
+
+      .tacho-card h3 {
+        color: #b0e0e6; /* Azul claro suave */
+        font-size: 2em; /* Adjusted font size for better scaling */
+        margin-bottom: 20px; /* Reduced margin */
+        text-shadow: 0 0 5px rgba(176, 224, 230, 0.4); /* Sombra de texto suave */
+      }
+
+      /* Visual del tacho (miniatura) - Integrated 'tacho' styles */
+      .tacho-card .tacho-visual {
+        width: 100px; /* Original size, adapt for mobile in media queries */
+        height: 150px; /* Original size, adapt for mobile in media queries */
+        /* background-color: rgba(43, 79, 115, 0.7); Removed this background, using new tacho style */
+        background: #141414; /* New background from your tacho example */
+        border: 2px solid #6a5acd; /* Original border */
+        border-radius: 15px; /* Original border-radius */
+        margin: 20px auto; /* Original margin */
+        position: relative;
+        overflow: hidden; /* Crucial for the liquid fill */
+        display: flex;
+        flex-direction: column-reverse; /* Ensure fill starts from bottom */
+        box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.144),
+          0 0 30px rgba(0, 255, 255, 0.342); /* New box-shadow from tacho example */
+        transform: rotateX(5deg); /* Initial transform from tacho example */
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Transitions for hover effect */
+        backdrop-filter: blur(2px); /* Original backdrop-filter */
+      }
+
+      /* Animation when tacho-visual is hovered */
+      .tacho-card .tacho-visual:hover {
+        transform: scale(1.05) rotateX(5deg) rotateY(5deg); /* More subtle hover for dashboard */
+        box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.5),
+          0 0 60px rgba(0, 255, 255, 0.8);
+      }
+
+      /* The level inside the bin - Integrated 'nivel' styles */
+      /* ... (todo tu CSS anterior hasta .tacho-card .tacho-fill) ... */
+
+      /* El nivel dentro del tacho - Integrated 'nivel' styles */
+      .tacho-card .tacho-fill {
+        width: 100%;
+        height: 0; /* Starts empty */
+        /* Remove fixed background and box-shadow here */
+        /* background: linear-gradient(135deg, rgba(0, 255, 255, 0.6), rgba(0, 150, 255, 0.8)); */
+        position: absolute; /* positioned relative to .tacho-visual */
+        bottom: 0;
+        transition: height 0.7s ease-in-out; /* Smooth fill transition */
+        /* Remove fixed box-shadow here */
+        /* box-shadow: 0 0 20px rgba(0, 255, 255, 0.8); */
+        overflow: hidden; /* Important for bubble/lava overflows */
+        animation: cambioColor 10s infinite alternate ease-in-out; /* Color animation */
+
+        /* Initial values for custom properties (will be overridden by JS) */
+        --color-base-1: rgba(0, 255, 255, 0.6);
+        --color-base-2: rgba(0, 150, 255, 0.8);
+        --glow-color: rgba(0, 255, 255, 0.8);
+
+        /* Apply initial background and box-shadow using variables */
+        background: linear-gradient(
+          135deg,
+          var(--color-base-1),
+          var(--color-base-2)
+        );
+        box-shadow: 0 0 20px var(--glow-color);
+      }
+
+      /* Bubbles inside the level */
+      .tacho-card .tacho-fill::before {
+        content: "";
+        position: absolute;
+        width: 150%;
+        height: 200%;
+        top: -150%;
+        left: -25%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        animation: burbujeo 4s infinite ease-in-out;
+        filter: blur(10px);
+        opacity: 0.6;
+      }
+
+      /* Lava effect inside the level */
+      .tacho-card .tacho-fill::after {
+        content: "";
+        position: absolute;
+        width: 150%;
+        height: 150%;
+        /* Use variables for lava effect as well for consistency */
+        background: radial-gradient(
+          circle at center,
+          var(--color-lava-center, rgba(0, 255, 255, 0.6)),
+          var(--color-lava-edge, rgba(0, 150, 255, 0.3)),
+          transparent
+        );
+        top: -50%;
+        left: -25%;
+        animation: lava 3s infinite linear;
+        filter: blur(15px);
+        opacity: 0.8;
+      }
+
+      /* Fill level simulation on hover of the tacho-visual (adjust as needed) */
+      .tacho-card .tacho-visual:hover .tacho-fill {
+        height: 80%; /* Simulates bin filling */
+        animation: cambioColor 5s infinite alternate ease-in-out; /* Faster color change on hover */
+      }
+
+      /* Keyframes for bubble animation */
+      @keyframes burbujeo {
+        0% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-100%) scale(1.2);
+        }
+        100% {
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* Keyframes for lava animation */
+      @keyframes lava {
+        0% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-80%) scale(1.3);
+        }
+        100% {
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      /* Keyframes for gradual color change - NOW USING CSS VARIABLES */
+      @keyframes cambioColor {
+        0% {
+          background: linear-gradient(
+            135deg,
+            var(--color-base-1),
+            var(--color-base-2)
+          );
+          box-shadow: 0 0 20px var(--glow-color);
+        }
+        25% {
+          background: linear-gradient(
+            135deg,
+            var(--color-step1-1),
+            var(--color-step1-2)
+          );
+          box-shadow: 0 0 20px var(--glow-step1);
+        }
+        50% {
+          background: linear-gradient(
+            135deg,
+            var(--color-step2-1),
+            var(--color-step2-2)
+          );
+          box-shadow: 0 0 20px var(--glow-step2);
+        }
+        75% {
+          background: linear-gradient(
+            135deg,
+            var(--color-step3-1),
+            var(--color-step3-2)
+          );
+          box-shadow: 0 0 20px var(--glow-step3);
+        }
+        100% {
+          background: linear-gradient(
+            135deg,
+            var(--color-step4-1),
+            var(--color-step4-2)
+          );
+          box-shadow: 0 0 20px var(--glow-step4);
+        }
+      }
+
+      /* ... (el resto de tu CSS para .tacho-card p, buttons, media queries) ... */
+
+      .tacho-card p {
+        font-size: 1.25em; /* Un poco más grande */
+        margin: 10px 0;
+        color: #e0f2f7; /* Color de texto suave */
+      }
+
+      .tacho-card .status-text {
+        font-weight: bold;
+        color: #87ceeb; /* Azul cielo suave */
+        text-shadow: 0 0 3px rgba(135, 206, 235, 0.6); /* Sombra de texto muy suave */
+      }
+
+      /* Botones con estilo "Ghost" y profundidad */
+      .tacho-card button,
+      .dashboard-header button {
+        background-color: transparent; /* Fondo transparente */
+        color: #98fb98; /* Verde menta suave, menos brillante */
+        border: 1px solid #66cdaa; /* Borde cian claro */
+        padding: 16px 32px; /* Más padding */
+        border-radius: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.4s ease; /* Transición más uniforme */
+        margin-top: 25px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3),
+          inset 0 0 0px rgba(102, 205, 170, 0); /* Sombra sutil, sin brillo inicial */
+        backdrop-filter: blur(5px); /* Blur para el botón también */
+      }
+
+      .tacho-card button:last-of-type {
+        /* Espacio entre los dos botones de la tarjeta */
+        margin-top: 15px;
+      }
+
+      .tacho-card button:hover,
+      .dashboard-header button:hover {
+        background-color: rgba(
+          102,
+          205,
+          170,
+          0.1
+        ); /* Fondo muy sutil al hover */
+        color: #c0fec0; /* Verde menta un poco más claro */
+        transform: translateY(-4px); /* Mayor elevación */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(102, 205, 170, 0.4); /* Sombra y brillo interior más fuertes */
+        border-color: #98fb98; /* Borde más visible al hover */
+      }
+
+      /* Mensaje de "Sin datos" */
+      .no-data-message {
+        font-size: 1.8em;
+        color: #ff8c00; /* Naranja oscuro, menos agresivo */
+        text-align: center;
+        margin-top: 60px;
+        text-shadow: 0 0 8px rgba(255, 140, 0, 0.5); /* Sombra más suave */
+      }
+
+      /* Media Queries para Responsividad (ajusta según necesites) */
+      @media (max-width: 1200px) {
+        .tacho-grid {
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 30px;
+        }
+        .dashboard-header h1 {
+          font-size: 3em;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-header h1 {
+          font-size: 2.2em; /* Smaller on mobile */
+        }
+        .search-container {
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
+        .tacho-grid {
+          grid-template-columns: repeat(
+            2,
+            1fr
+          ); /* TWO COLUMNS ON SMALLER SCREENS */
+          padding: 15px;
+          gap: 20px; /* Slightly reduced gap for more compact look */
+        }
+        body {
+          padding: 15px;
+        }
+        .tacho-card {
+          padding: 20px; /* Reduced padding */
+          min-height: 240px; /* Adjusted min-height */
+        }
+        .tacho-card h3 {
+          font-size: 1.8em; /* Adjusted font size */
+          margin-bottom: 15px; /* Reduced margin */
+        }
+        .tacho-card .tacho-visual {
+          width: 70px; /* Smaller visual */
+          height: 100px; /* Smaller visual */
+          margin: 10px auto; /* Adjusted margin */
+          /* Adjust box-shadow for smaller size if needed */
+          box-shadow: inset 0 0 6px rgba(0, 255, 255, 0.144),
+            0 0 20px rgba(0, 255, 255, 0.342);
+        }
+        .tacho-card .tacho-visual:hover {
+          transform: scale(1.05) rotateX(5deg) rotateY(5deg);
+          box-shadow: inset 0 0 30px rgba(0, 255, 255, 0.5),
+            0 0 40px rgba(0, 255, 255, 0.8);
+        }
+        .tacho-card p {
+          font-size: 1em; /* Smaller text */
+          margin: 5px 0; /* Reduced margin */
+        }
+        .tacho-card button {
+          font-size: 1em; /* Smaller button font */
+          padding: 12px 24px; /* Smaller button padding */
+          margin-top: 15px; /* Adjusted margin */
+        }
+        .tacho-card button:last-of-type {
+          margin-top: 8px; /* Adjusted margin */
+        }
+      }
+
+      @media (max-width: 480px) {
+        .dashboard-header h1 {
+          font-size: 1.8em;
+        }
+        .search-container input,
+        .tacho-card button,
+        .dashboard-header button {
+          font-size: 0.9em;
+          padding: 8px 16px;
+        }
+        .tacho-grid {
+          grid-template-columns: 1fr; /* Single column on very small screens for readability */
+          gap: 15px; /* Smaller gap */
+        }
+        .tacho-card {
+          padding: 15px; /* Even less padding */
+          min-height: 200px; /* Further adjusted min-height */
+        }
+        .tacho-card h3 {
+          font-size: 1.6em;
+        }
+        .tacho-card .tacho-visual {
+          width: 60px; /* Even smaller visual */
+          height: 90px; /* Even smaller visual */
+          box-shadow: inset 0 0 4px rgba(0, 255, 255, 0.144),
+            0 0 15px rgba(0, 255, 255, 0.342);
+        }
+        .tacho-card .tacho-visual:hover {
+          transform: scale(1.05) rotateX(5deg) rotateY(5deg);
+          box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.5),
+            0 0 30px rgba(0, 255, 255, 0.8);
+        }
+        .tacho-card p {
+          font-size: 0.9em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-header">
+      <h1>Dashboard FlotaBin IA</h1>
+      <div class="search-container">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Buscar tacho por nombre..."
+        />
+      </div>
+      <button onclick="window.location.href='graficos/index.html'">
+        Ver Gráficos y Estadísticas
+      </button>
+    </div>
+
+    <div class="tacho-grid" id="tachoGrid"></div>
+
+    <p class="no-data-message" id="noDataMessage" style="display: none">
+      No se han recibido datos de ningún tacho aún. Asegúrate de que tus
+      dispositivos estén enviando información.
+    </p>
+
+    <script type="module" src="./js/dashboard.js"></script>
+  </body>
+</html>

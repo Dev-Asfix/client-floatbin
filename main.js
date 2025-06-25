@@ -136,14 +136,16 @@ const Pin = () => {
   const { userStatus, setUserStatusTo } = React.useContext(AppContext);
   const [pin, setPinTo] = React.useState("");
   const ref = React.useRef(null);
+
   React.useEffect(() => {
     if (userStatus === UserStatus.LoggingIn || userStatus === UserStatus.LogInError) {
       ref.current.focus();
     }
     else {
-      setPinTo("");
+      setPinTo(""); // Clear pin when logging out or if already logged in
     }
   }, [userStatus]);
+
   React.useEffect(() => {
     if (pin.length === 4) {
       const verify = async () => {
@@ -151,6 +153,8 @@ const Pin = () => {
           setUserStatusTo(UserStatus.VerifyingLogIn);
           if (await LogInUtility.verify(pin)) {
             setUserStatusTo(UserStatus.LoggedIn);
+            // Save login state to localStorage on successful login
+            localStorage.setItem('isLoggedIn', 'true'); // <--- ADDED LINE
           }
         }
         catch (err) {
@@ -163,12 +167,14 @@ const Pin = () => {
     if (userStatus === UserStatus.LogInError) {
       setUserStatusTo(UserStatus.LoggingIn);
     }
-  }, [pin]);
+  }, [pin, userStatus]); // Added userStatus to dependencies to re-evaluate on error
+
   const handleOnClick = () => {
     ref.current.focus();
   };
   const handleOnCancel = () => {
     setUserStatusTo(UserStatus.LoggedOut);
+    localStorage.removeItem('isLoggedIn'); // <--- ADDED LINE: Remove login state on cancel/logout
   };
   const handleOnChange = (e) => {
     if (e.target.value.length <= 4) {
@@ -293,24 +299,34 @@ const Weather = () => {
 };
 const Tools = () => {
   const getTools = () => {
+    // Definimos las URLs que tienes
+    const toolLinks = [
+      "public/modules/dashboard.html",
+      "public/modules/graficos/index.html",
+      "public/modules/ubicacion/index.html",
+      "#", // Placeholder para la herramienta 4
+      "#", // Placeholder para la herramienta 5
+      "#"  // Placeholder para la herramienta 6
+    ];
+
     return [{
       icon: "fa-solid fa-cloud-sun",
       id: 1,
       image: "./images/gestion.png",
-      label: "Monitoreo: Tiempo real",
-      name: "Gestión Smart"
+      label: "Rendimiento: En tiempo real",
+      name: "Dashboard Central"
     }, {
       icon: "fa-solid fa-calculator-simple",
       id: 2,
       image: "./images/prediccion.png",
-      label: "Llenado: Preciso",
-      name: "Predicción Exacta"
+      label: "Datos: Análisis visual",
+      name: "Estadísticas Clave"
     }, {
       icon: "fa-solid fa-piggy-bank",
       id: 3,
       image: "./images/eco.png",
-      label: "Sostenibilidad:",
-      name: "Eco-Eficiencia"
+      label: "Contenedores: Ubicación exacta:",
+      name: "Mapa Interactivo"
     }, {
       icon: "fa-solid fa-plane",
       id: 4,
@@ -333,13 +349,23 @@ const Tools = () => {
       const styles = {
         backgroundImage: `url(${tool.image})`
       };
-      return (React.createElement("div", { key: tool.id, className: "tool-card" },
-        React.createElement("div", { className: "tool-card-background background-image", style: styles }),
-        React.createElement("div", { className: "tool-card-content" },
-          React.createElement("div", { className: "tool-card-content-header" },
-            React.createElement("span", { className: "tool-card-label" }, tool.label),
-            React.createElement("span", { className: "tool-card-name" }, tool.name)),
-          React.createElement("i", { className: classNames(tool.icon, "tool-card-icon") }))));
+
+      // Asignar el link correspondiente a cada herramienta
+      const link = toolLinks[tool.id - 1] || "#"; // Usa el ID para acceder al link, resta 1 por ser array 0-indexed
+
+      return (
+        React.createElement("a", { key: tool.id, href: link, className: "tool-card-link" }, // Envuelve la tarjeta en un <a>
+          React.createElement("div", { className: "tool-card" },
+            React.createElement("div", { className: "tool-card-background background-image", style: styles }),
+            React.createElement("div", { className: "tool-card-content" },
+              React.createElement("div", { className: "tool-card-content-header" },
+                React.createElement("span", { className: "tool-card-label" }, tool.label),
+                React.createElement("span", { className: "tool-card-name" }, tool.name)),
+              React.createElement("i", { className: classNames(tool.icon, "tool-card-icon") })
+            )
+          )
+        )
+      );
     });
   };
   return (React.createElement(MenuSection, { icon: "fa-solid fa-toolbox", id: "tools-section", title: "Caracteristicas" }, getTools()));
@@ -351,7 +377,7 @@ const Restaurants = () => {
       id: 1,
       image: "./images/Chatbot.png",
       title: "Chatbot IA",
-      link: "../chatbot/index.html",
+      link: "../chat/index.html",
     }, {
       desc: "Pronóstico en tiempo real",
       id: 2,
@@ -427,10 +453,6 @@ const Movies = () => {
   return (React.createElement(MenuSection, { icon: "fa-solid fa-camera-movie", id: "movies-section", scrollable: true, title: "Beneficios" }, getMovies()));
 };
 
-
-
-
-
 //--------------
 // Nueva Sección: Notificaciones Rápidas
 const ControlEstados = () => {
@@ -458,14 +480,14 @@ const ControlClima = () => {
   );
 };
 
-
-
-
-
 const UserStatusButton = (props) => {
   const { userStatus, setUserStatusTo } = React.useContext(AppContext);
   const handleOnClick = () => {
     setUserStatusTo(props.userStatus);
+    // If the button is for logging out, also clear localStorage
+    if (props.userStatus === UserStatus.LoggedOut) { // <--- MODIFIED LINE
+      localStorage.removeItem('isLoggedIn'); // <--- ADDED LINE
+    }
   };
   return (React.createElement("button", { id: props.id, className: "user-status-button clear-button", disabled: userStatus === props.userStatus, type: "button", onClick: handleOnClick },
     React.createElement("i", { className: props.icon })));
@@ -530,33 +552,43 @@ const Background = () => {
   );
 };
 
-
 const Loading = () => {
   return (React.createElement("div", { id: "app-loading-icon" },
     React.createElement("i", { className: "fa-solid fa-spinner-third" })));
 };
 
-
-
-
-
-
 const AppContext = React.createContext(null);
+
 const App = () => {
-  const [userStatus, setUserStatusTo] = React.useState(UserStatus.LoggedOut);
+  // Check localStorage on initial load
+  const initialUserStatus = localStorage.getItem('isLoggedIn') === 'true'
+    ? UserStatus.LoggedIn
+    : UserStatus.LoggedOut;
+
+  const [userStatus, setUserStatusTo] = React.useState(initialUserStatus);
+
+  // Effect to update localStorage whenever userStatus changes
+  React.useEffect(() => {
+    if (userStatus === UserStatus.LoggedIn) {
+      localStorage.setItem('isLoggedIn', 'true');
+    } else if (userStatus === UserStatus.LoggedOut) {
+      localStorage.removeItem('isLoggedIn');
+    }
+  }, [userStatus]);
+
   const getStatusClass = () => {
     return userStatus.replace(/\s+/g, "-").toLowerCase();
   };
+
   return (React.createElement(AppContext.Provider, { value: { userStatus, setUserStatusTo } },
     React.createElement("div", { id: "app", className: getStatusClass() },
       React.createElement(Info, { id: "app-info" }),
       React.createElement(Pin, null),
       React.createElement(Menu, null),
-
       React.createElement(Background, null),
-
       React.createElement("div", { id: "sign-in-button-wrapper" },
         React.createElement(UserStatusButton, { icon: "iconix", id: "sign-in-button", userStatus: UserStatus.LoggingIn })),
       React.createElement(Loading, null))));
 };
+
 ReactDOM.render(React.createElement(App, null), document.getElementById("root"));

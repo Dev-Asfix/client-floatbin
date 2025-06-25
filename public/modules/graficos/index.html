@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlotaBin IA - Gráficos y Estadísticas</title>
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="icon" href="../../images/Robot.png" type="image/x-icon" />
+    <!-- Incluye Chart.js desde un CDN (o localmente si lo prefieres) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Incluye Chart.js Zoom Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+    <style>
+      /* BASE STYLES: Default for screens <= 767px (Mobile-First) */
+      body {
+        background-color: transparent; /* Ensures the body itself is transparent */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 30px;
+        box-sizing: border-box;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Pseudo-elemento para el fondo animado que cambiará las imágenes */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        /* Make the images more prominent but with a subtle dark tint */
+        opacity: 1; /* Make the image fully opaque initially */
+        z-index: -1;
+        pointer-events: none;
+        animation: changeBackground 45s infinite ease-in-out;
+        /* Overlay a dark color to add "a bit of darkness" */
+        background-color: rgba(0, 0, 0, 0.4); /* Subtle dark overlay */
+        background-blend-mode: multiply; /* Blends the dark color with the image */
+      }
+
+      /* Overlay de gradiente adicional para un toque más moderno y cohesivo */
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at top left,
+            rgba(102, 204, 255, 0.05) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at bottom right,
+            rgba(70, 130, 180, 0.05) 0%,
+            transparent 40%
+          );
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* Keyframes para la animación de cambio de imagen de fondo */
+      @keyframes changeBackground {
+        0% {
+          background-image: url("/images/fondo1.jpg"); /* Using your uploaded image names as examples */
+        }
+        15% {
+          background-image: url("/images/fondo1.jpg");
+        }
+        25% {
+          background-image: url("/images/fondo1.jpg");
+        }
+        33% {
+          background-image: url("/images/fondo2.jpg");
+        }
+        48% {
+          background-image: url("/images/fondo2.jpg");
+        }
+        58% {
+          background-image: url("/images/fondo5.jpg");
+        }
+        73% {
+          background-image: url("/images/fondo5.jpg");
+        }
+        83% {
+          background-image: url("/images/fondo1.jpg");
+        }
+        100% {
+          background-image: url("/images/fondo1.jpg");
+        }
+      }
+
+      /* Contenedor principal del módulo de gráficos */
+      .graficos-container {
+        width: 100%; /* Full width on small screens */
+        max-width: 1600px; /* Limita el ancho máximo en pantallas muy grandes */
+        background-color: transparent; /* Darker background, now truly transparent for content overlay */
+        border: 1px solid #66b3ff; /* Cooler border color */
+        border-radius: 10px;
+        padding: 15px; /* Base padding for mobile sections */
+        box-shadow: 0 0 15px rgba(102, 179, 255, 0.3),
+          0 0 20px rgba(102, 204, 255, 0.1); /* Subtler glow */
+        margin-top: 15px;
+        display: grid;
+        grid-template-columns: 1fr; /* Single column layout for mobile */
+        gap: 20px; /* Consistent spacing between main sections */
+        align-items: stretch; /* Make children fill available height for alignment */
+        justify-items: stretch; /* Make children fill their grid cells horizontally */
+        /* Removed backdrop-filter to make it nitid */
+      }
+
+      /* Sección de encabezado */
+      .graficos-header {
+        grid-column: 1 / -1; /* Spans full width, always at the top */
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .graficos-header h1 {
+        font-size: 2.2em; /* Smaller font for mobile header */
+        color: #ffffffab; /* Cooler header color */
+        text-shadow: 0 0 8px #66b3ffbb, 0 0 15px #66ccffc5; /* Subtler text shadow */
+        animation: neonGlow 1.8s ease-in-out infinite alternate;
+      }
+
+      @keyframes neonGlow {
+        from {
+          text-shadow: 0 0 6px #66b3ff, 0 0 12px #66ccff;
+        }
+        to {
+          text-shadow: 0 0 9px #66b3ff, 0 0 18px #66ccff;
+        }
+      }
+
+      /* Summary Section (Mobile: Appears first. Desktop: order: 2) */
+      .summary-section {
+        background-color: rgba(
+          19,
+          34,
+          53,
+          0.7
+        ); /* Darker background with some transparency for "a bit of darkness" and "transparent" effect */
+        border: 1px solid #66b3ff; /* Cooler border */
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(102, 179, 255, 0.3); /* Subtler shadow */
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        order: 1; /* Esto hace que el resumen siempre salga primero en móvil */
+        height: auto; /* Allow height to adjust to content */
+        min-height: 0; /* Allow flex item to shrink below content size if needed */
+        /* Removed backdrop-filter to make it nitid */
+      }
+
+      .summary-section h2 {
+        color: #66b3ff; /* Cooler header color */
+        font-size: 1.8em;
+        margin-bottom: 10px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .filter-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+      }
+
+      .filter-controls label {
+        font-size: 1em;
+        color: #a6cbe3; /* Muted label color */
+      }
+
+      .filter-controls select,
+      .filter-controls input[type="date"] {
+        padding: 8px;
+        border: 1px solid #4d94ff; /* Cooler input border */
+        border-radius: 5px;
+        background-color: rgba(
+          26,
+          42,
+          64,
+          0.7
+        ); /* Darker input background with transparency */
+        color: #fff;
+        font-size: 0.95em;
+        outline: none;
+        transition: border-color 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .filter-controls select:focus,
+      .filter-controls input[type="date"]:focus {
+        border-color: #66ccff;
+        box-shadow: 0 0 8px rgba(102, 204, 255, 0.5); /* Subtler focus shadow */
+      }
+
+      .list-container {
+        max-height: 280px; /* Max height for lists on mobile */
+        overflow-y: auto;
+        padding-right: 8px;
+        margin-bottom: 15px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .list-container h3 {
+        color: #66ccff; /* Cooler list header color */
+        font-size: 1.3em;
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(102, 204, 255, 0.2);
+        padding-bottom: 5px;
+        flex-shrink: 0;
+      }
+
+      .urgent-bins-list,
+      .all-active-bins-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-grow: 1;
+      }
+
+      .urgent-bins-list li,
+      .all-active-bins-list li {
+        background-color: rgba(
+          36,
+          59,
+          85,
+          0.7
+        ); /* Darker list item background with transparency */
+        border: 1px solid #ff4d94; /* Cooler border color */
+        border-left: 4px solid #ff4d94;
+        padding: 12px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column; /* SIEMPRE EN COLUMNA: info arriba, botones abajo */
+        align-items: flex-start; /* Alinea la info a la izquierda */
+        gap: 10px; /* Espacio entre la info y los botones */
+        font-size: 0.95em;
+        box-shadow: 0 0 8px rgba(255, 77, 148, 0.3); /* Subtler shadow */
+        width: 350px;
+        box-sizing: border-box;
+      }
+
+      /* Status-specific colors for list items */
+      .urgent-bins-list li.status-Lleno,
+      .all-active-bins-list li.status-Lleno {
+        border-color: #ff4d94;
+        background-color: rgba(64, 32, 43, 0.7); /* With transparency */
+      }
+      .urgent-bins-list li.status-Alto,
+      .all-active-bins-list li.status-Alto {
+        border-color: #ffcc66;
+        background-color: rgba(64, 53, 32, 0.7); /* With transparency */
+      }
+      .urgent-bins-list li.status-Medio,
+      .all-active-bins-list li.status-Medio {
+        border-color: #4db8ff;
+        background-color: rgba(32, 56, 64, 0.7); /* With transparency */
+      }
+      .urgent-bins-list li.status-Bajo,
+      .all-active-bins-list li.status-Bajo {
+        border-color: #b3ff66;
+        background-color: rgba(43, 64, 32, 0.7); /* With transparency */
+      }
+      .urgent-bins-list li.status-Vacio,
+      .all-active-bins-list li.status-Vacio {
+        border-color: #cccccc;
+        background-color: rgba(77, 77, 77, 0.7); /* With transparency */
+      }
+
+      .urgent-bins-list li .bin-info,
+      .all-active-bins-list li .bin-info {
+        flex-grow: 1; /* Permite que la información del tacho ocupe el espacio disponible */
+        color: #fff;
+        text-align: left; /* Asegura alineación a la izquierda si la info es multilinea */
+        width: 100%; /* Asegura que ocupe todo el ancho disponible para su texto */
+      }
+      .urgent-bins-list li .bin-status,
+      .all-active-bins-list li .bin-status {
+        font-weight: bold;
+      }
+
+      /* Specific status text colors */
+      .urgent-bins-list li.status-Lleno .bin-status,
+      .all-active-bins-list li.status-Lleno .bin-status {
+        color: #ff4d94;
+      }
+      .urgent-bins-list li.status-Alto .bin-status,
+      .all-active-bins-list li.status-Alto {
+        color: #ffcc66;
+      }
+      .urgent-bins-list li.status-Medio .bin-status,
+      .all-active-bins-list li.status-Medio {
+        color: #4db8ff;
+      }
+      .urgent-bins-list li.status-Bajo .bin-status,
+      .all-active-bins-list li.status-Bajo {
+        color: #b3ff66;
+      }
+      .urgent-bins-list li.status-Vacio .bin-status,
+      .all-active-bins-list li.status-Vacio {
+        color: #cccccc;
+      }
+
+      .urgent-bins-list li .bin-actions,
+      .all-active-bins-list li .bin-actions {
+        display: flex;
+        flex-wrap: wrap; /* Permite que los botones se envuelvan si no hay espacio */
+        gap: 8px;
+        justify-content: flex-start; /* Alinea los botones a la izquierda si están en columna */
+        width: 100%; /* Ocupa todo el ancho disponible para que justify-content funcione */
+        align-items: center; /* Asegura que los botones se centren verticalmente entre ellos */
+        margin-top: 5px; /* Espacio adicional entre la info y los botones */
+      }
+
+      .urgent-bins-list li .bin-actions button,
+      .all-active-bins-list li .bin-actions button {
+        background-color: #4db8ff; /* Cooler button color */
+        color: #132235; /* Darker text */
+        border: none;
+        padding: 7px 10px;
+        border-radius: 5px;
+        font-size: 0.85em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        flex-grow: 1; /* Permite que los botones ocupen el espacio disponible, se estiren */
+        max-width: 180px; /* Limita el ancho máximo para evitar que sean demasiado anchos */
+      }
+
+      .urgent-bins-list li .bin-actions button:hover,
+      .all-active-bins-list li .bin-actions button:hover {
+        background-color: #66ccff; /* Lighter hover color */
+      }
+
+      /* Charts Section (Mobile: Appears second. Desktop: order: 1) */
+      .charts-section {
+        display: grid;
+        grid-template-columns: 1fr; /* Single column for charts on mobile */
+        gap: 20px;
+        order: 2; /* Los gráficos como un bloque vienen después del resumen en móvil */
+        height: auto; /* Allows stretching in grid */
+        min-height: 0;
+      }
+
+      .chart-card {
+        background-color: rgba(
+          19,
+          34,
+          53,
+          0.7
+        ); /* Darker card background with transparency */
+        border: 1px solid #4db8ff; /* Cooler border */
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 0 10px rgba(102, 204, 255, 0.3); /* Subtler shadow */
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        box-sizing: border-box;
+        height: 100%; /* Important for stretching in grid/flex layouts */
+        min-height: 0;
+        order: unset; /* Reset order for desktop in media query */
+        /* Removed backdrop-filter to make it nitid */
+      }
+
+      /* Mobile-specific order for individual chart cards within .charts-section */
+      #distanceHistoryChartCard {
+        order: 1;
+      } /* Historial de Nivel de los Tachons */
+      #statusDistributionChartCard {
+        order: 2;
+      } /* Distribución de Tachos por Estado */
+      #fillFrequencyChartCard {
+        order: 3;
+      } /* Frecuencia de Llenado por Tacho */
+
+      .chart-card h2 {
+        color: #66ccff; /* Cooler chart header */
+        font-size: 1.5em;
+        margin-bottom: 10px;
+        text-align: center;
+        border-bottom: 1px solid rgba(102, 204, 255, 0.2);
+        padding-bottom: 8px;
+        flex-shrink: 0;
+      }
+
+      .chart-canvas-container {
+        position: relative;
+        height: 250px; /* Base height for charts on mobile */
+        width: 100%;
+        margin: auto;
+        flex-grow: 1; /* Allow canvas container to grow and fill available space */
+        min-height: 0;
+      }
+
+      .chart-canvas-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      /* Styles for scrollbar */
+      .list-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      .list-container::-webkit-scrollbar-track {
+        background: #132235; /* Darker scrollbar track */
+        border-radius: 10px;
+      }
+      .list-container::-webkit-scrollbar-thumb {
+        background: #4db8ff; /* Cooler scrollbar thumb */
+        border-radius: 10px;
+      }
+      .list-container::-webkit-scrollbar-thumb:hover {
+        background: #66ccff;
+      }
+
+      /* Notification Container */
+      #notificationContainer {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+      }
+      .notification {
+        background-color: rgba(
+          36,
+          59,
+          85,
+          0.7
+        ); /* Darker notification background with transparency */
+        color: #66b3ff; /* Cooler notification text */
+        padding: 12px 18px;
+        border-radius: 8px;
+        box-shadow: 0 0 12px rgba(102, 179, 255, 0.5); /* Subtler shadow */
+        border: 1px solid #66b3ff;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
+        pointer-events: all;
+        min-width: 200px;
+        max-width: 300px;
+        /* Removed backdrop-filter to make it nitid */
+      }
+      .notification.urgent {
+        background-color: rgba(64, 32, 43, 0.7); /* With transparency */
+        border-color: #ff4d94;
+        box-shadow: 0 0 18px rgba(255, 77, 148, 0.7);
+      }
+      .notification.warning {
+        background-color: rgba(64, 53, 32, 0.7); /* With transparency */
+        border-color: #ffcc66;
+        box-shadow: 0 0 18px rgba(255, 204, 102, 0.7);
+      }
+      .notification .close-btn {
+        background: none;
+        border: none;
+        color: #66b3ff;
+        font-size: 1.3em;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0 3px;
+        transition: color 0.2s ease;
+      }
+      .notification .close-btn:hover {
+        color: #ff4d94;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+        }
+      }
+
+      /* No data message */
+      .no-data-charts {
+        text-align: center;
+        color: #ff8099; /* Softer error color */
+        font-size: 1.2em;
+        margin-top: 20px;
+        grid-column: 1 / -1; /* Spans full width in the chart section's grid */
+      }
+      .summary-section .no-data {
+        text-align: center;
+        color: #ff8099;
+        font-size: 1em;
+        padding: 10px;
+        background-color: rgba(255, 128, 153, 0.1);
+        border-radius: 8px;
+        margin-top: 10px;
+      }
+
+      /* Chart Reset Zoom Button */
+      .chart-card button {
+        background-color: #4d94ff; /* Cooler button */
+        color: white;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        border: none;
+        margin-top: 10px;
+        font-size: 0.9em;
+        transition: background-color 0.3s ease;
+        align-self: center;
+        flex-shrink: 0;
+      }
+      .chart-card button:hover {
+        background-color: #66b3ff;
+      }
+
+      /* --- MEDIA QUERIES FOR DIFFERENT SCREEN SIZES --- */
+
+      /* Smallest Phones (300px - 399px) */
+      @media (min-width: 300px) {
+        body {
+          padding: 12px;
+        }
+        .graficos-container {
+          padding: 18px;
+          gap: 20px;
+        }
+        .graficos-header h1 {
+          font-size: 2.4em;
+        }
+        .summary-section {
+          padding: 22px;
+          gap: 18px;
+        }
+        .summary-section h2 {
+          font-size: 1.9em;
+        }
+        .list-container {
+          max-height: 300px;
+        }
+        .list-container h3 {
+          font-size: 1.4em;
+        }
+        .urgent-bins-list li,
+        .all-active-bins-list li {
+          padding: 14px;
+          font-size: 1em;
+        }
+        .chart-card {
+          padding: 18px;
+        }
+        .chart-card h2 {
+          font-size: 1.6em;
+        }
+        .chart-canvas-container {
+          height: 260px;
+        }
+        .notification {
+          font-size: 0.95em;
+          min-width: 220px;
+          max-width: 320px;
+        }
+      }
+
+      /* Larger Phones (400px - 499px) */
+      @media (min-width: 400px) {
+        body {
+          padding: 15px;
+        }
+        .graficos-container {
+          padding: 20px;
+          gap: 25px;
+        }
+        .graficos-header h1 {
+          font-size: 2.8em;
+        }
+        .summary-section {
+          padding: 25px;
+          gap: 20px;
+        }
+        .summary-section h2 {
+          font-size: 2.1em;
+        }
+        .filter-controls {
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .filter-controls label {
+          width: auto;
+          margin-bottom: 0;
+        }
+        .filter-controls select,
+        .filter-controls input[type="date"] {
+          flex-grow: 1;
+          min-width: calc(50% - 8px);
+        }
+        .list-container {
+          max-height: 320px;
+        }
+        .list-container h3 {
+          font-size: 1.5em;
+        }
+        .urgent-bins-list li,
+        .all-active-bins-list li {
+          align-items: flex-start;
+          gap: 15px;
+          font-size: 1.05em;
+        }
+        .urgent-bins-list li .bin-actions,
+        .all-active-bins-list li .bin-actions {
+          flex-wrap: wrap;
+          width: 100%;
+          justify-content: flex-start;
+          align-items: center;
+        }
+        .urgent-bins-list li .bin-actions button,
+        .all-active-bins-list li .bin-actions button {
+          padding: 8px 12px;
+          font-size: 0.9em;
+          flex-grow: 1;
+          max-width: 180px;
+        }
+        .charts-section {
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 25px;
+        }
+        .chart-card {
+          padding: 20px;
+        }
+        .chart-card h2 {
+          font-size: 1.8em;
+        }
+        .chart-canvas-container {
+          height: 280px;
+        }
+        .notification {
+          font-size: 1em;
+          min-width: 250px;
+          max-width: 350px;
+        }
+      }
+
+      /* Phablets / Small Tablets (500px - 767px) */
+      @media (min-width: 500px) {
+        body {
+          padding: 20px;
+        }
+        .graficos-container {
+          padding: 25px;
+          gap: 30px;
+        }
+        .graficos-header h1 {
+          font-size: 3.2em;
+        }
+        .summary-section {
+          padding: 30px;
+          gap: 25px;
+        }
+        .summary-section h2 {
+          font-size: 2.3em;
+        }
+        .filter-controls {
+          gap: 15px;
+        }
+        .filter-controls label {
+          font-size: 1.1em;
+        }
+        .filter-controls select,
+        .filter-controls input[type="date"] {
+          padding: 10px;
+          font-size: 1em;
+        }
+        .list-container {
+          max-height: 380px;
+        } /* Increased max-height for tablets */
+        .list-container h3 {
+          font-size: 1.6em;
+        }
+        .urgent-bins-list li,
+        .all-active-bins-list li {
+          padding: 16px;
+          font-size: 1.1em;
+        }
+        .urgent-bins-list li .bin-actions button,
+        .all-active-bins-list li .bin-actions button {
+          padding: 9px 14px; /* Ligeramente más grandes */
+          font-size: 0.95em;
+          max-width: 200px; /* Ligeramente más anchos para tablets */
+        }
+        .charts-section {
+          gap: 30px;
+        }
+        .chart-card {
+          padding: 25px;
+        }
+        .chart-card h2 {
+          font-size: 2em;
+        }
+        .chart-canvas-container {
+          height: 320px;
+        } /* Increased height for tablet charts */
+        .notification {
+          font-size: 1.1em;
+          min-width: 280px;
+          max-width: 400px;
+        }
+      }
+
+      /* Tablets (Landscape) and Laptops (768px and above) - DESKTOP LAYOUT STARTS HERE */
+      @media (min-width: 768px) {
+        body {
+          padding: 20px;
+        }
+        .graficos-container {
+          /* Two columns: 3 parts for charts, 1 part for summary */
+          grid-template-columns: 3fr 1fr;
+          padding: 30px;
+          gap: 30px;
+          margin-top: 30px;
+          align-items: stretch; /* Makes columns equal height */
+        }
+
+        /* Main Section Ordering for Desktop */
+        .charts-section {
+          order: 1; /* Charts section comes first (left) */
+          grid-column: 1; /* Explicitly place in first column */
+          grid-template-columns: 1fr; /* IMPORTANT: Charts stack vertically, full width of column */
+          gap: 30px; /* Gap between individual charts */
+        }
+        /* Reset individual chart card order for desktop */
+        #distanceHistoryChartCard,
+          /* Historial de Nivel */ #statusDistributionChartCard,
+          /* Distribución de Tachos */ #fillFrequencyChartCard {
+          /* Frecuencia de Llenado */
+          order: unset; /* Remove mobile specific order */
+        }
+
+        .summary-section {
+          order: 2; /* Summary section comes second (right) */
+          grid-column: 2; /* Explicitly place in second column */
+          padding: 30px;
+          height: auto; /* Allow height to be determined by content and grid stretching */
+        }
+
+        .graficos-header h1 {
+          font-size: 3.8em;
+        }
+        .chart-card h2 {
+          font-size: 2.2em;
+        }
+
+        /* Height for individual chart cards */
+        .chart-canvas-container {
+          height: 380px; /* Standard height for desktop charts */
+          max-height: none; /* Remove max-height constraint */
+        }
+        .chart-card {
+          height: auto; /* Allow individual cards to stretch within charts-section grid */
+        }
+
+        /* Summary list max height on desktop should be flexible */
+        .list-container {
+          max-height: 60vh; /* Use viewport height for max-height on desktop lists */
+          flex-grow: 1; /* Allows lists to grow within summary-section */
+          margin-bottom: 0; /* Remove bottom margin to prevent extra space */
+        }
+        .summary-section h2 {
+          font-size: 2.5em;
+        }
+
+        /* Ensure filter controls align nicely in a row */
+        .filter-controls {
+          flex-direction: row; /* Horizontal layout for filters */
+          gap: 15px; /* Adjust gap for horizontal filters */
+          flex-wrap: wrap; /* Allow filters to wrap to next line if screen too narrow */
+        }
+        .filter-controls label {
+          flex-basis: 100%;
+          text-align: left;
+        } /* Label takes full width */
+        .filter-controls select,
+        .filter-controls input[type="date"] {
+          flex-grow: 1; /* Inputs take available space */
+          min-width: 150px; /* Ensure they don't get too small */
+        }
+        /* Adjust individual list items for larger screens */
+        .urgent-bins-list li,
+        .all-active-bins-list li {
+          flex-direction: column; /* **MODIFICADO**: Siempre en columna */
+          align-items: flex-start; /* Alinea la info y los botones al inicio de la tarjeta */
+          justify-content: flex-start; /* **MODIFICADO**: Ya no empuja a los lados */
+          padding: 18px; /* Un poco más de padding para desktop */
+        }
+        .urgent-bins-list li .bin-info,
+        .all-active-bins-list li .bin-info {
+          flex-grow: 0; /* **MODIFICADO**: La info no necesita crecer para empujar, solo ocupa su espacio */
+          margin-right: 0; /* **MODIFICADO**: No hay margen a la derecha si no hay elementos en fila */
+          margin-bottom: 10px; /* Espacio debajo de la info antes de los botones */
+        }
+        .urgent-bins-list li .bin-actions,
+        .all-active-bins-list li .bin-actions {
+          flex-shrink: 0;
+          width: 100%; /* **MODIFICADO**: Ocupa todo el ancho */
+          flex-wrap: wrap; /* Permite que los botones se envuelvan si es necesario */
+          gap: 10px; /* Espacio entre los botones */
+          justify-content: flex-start; /* **MODIFICADO**: Alinea los botones a la izquierda */
+          align-items: center;
+        }
+        .urgent-bins-list li .bin-actions button,
+        .all-active-bins-list li .bin-actions button {
+          padding: 10px 16px; /* Botones más grandes para desktop */
+          font-size: 1em;
+          flex-grow: 1;
+          max-width: 220px;
+        }
+      }
+
+      /* Larger Laptops/Desktops (1024px and above) */
+      @media (min-width: 1024px) {
+        .graficos-container {
+          grid-template-columns: 4fr 1fr; /* More space for charts */
+        }
+        .charts-section {
+          grid-template-columns: 1fr; /* Still 1 column, but can be adjusted if needed for future multi-column chart layouts */
+        }
+        .graficos-header h1 {
+          font-size: 4.2em;
+        }
+        .chart-canvas-container {
+          height: 420px;
+        }
+        .list-container {
+          max-height: 65vh;
+        }
+        .urgent-bins-list li .bin-actions button,
+        .all-active-bins-list li .bin-actions button {
+          padding: 12px 18px; /* Botones aún más grandes */
+          font-size: 1.05em;
+          max-width: 250px; /* Aumenta el ancho máximo para botones */
+        }
+      }
+
+      /* Extra Large Desktops (1400px and above) */
+      @media (min-width: 1400px) {
+        .graficos-container {
+          grid-template-columns: 5fr 1fr; /* Even more space for charts on very wide screens */
+          padding: 40px;
+          gap: 40px;
+        }
+        .charts-section {
+          grid-template-columns: 1fr; /* Still 1 column */
+        }
+        .graficos-header h1 {
+          font-size: 4.8em;
+        }
+        .chart-canvas-container {
+          height: 480px;
+        }
+        .list-container {
+          max-height: 70vh;
+        }
+        .urgent-bins-list li .bin-actions button,
+        .all-active-bins-list li .bin-actions button {
+          padding: 14px 20px; /* Botones más grandes */
+          font-size: 1.1em;
+          max-width: 280px; /* Aumenta el ancho máximo para botones en pantallas muy grandes */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="graficos-container">
+      <div class="graficos-header">
+        <h1>Análisis FlotaBin IA</h1>
+      </div>
+
+      <!-- summary-section (Order 1 in mobile, Order 2 in desktop) -->
+      <div class="summary-section">
+        <h2>Resumen y Acciones Rápidas</h2>
+        <div class="filter-controls">
+          <label for="statusFilter">Filtrar por Estado:</label>
+          <select id="statusFilter">
+            <option value="todos">Todos</option>
+            <option value="Lleno">Lleno</option>
+            <option value="Alto">Alto</option>
+            <option value="Medio">Medio</option>
+            <option value="Bajo">Bajo</option>
+            <option value="Vacio">Vacío</option>
+          </select>
+
+          <label for="dateFilter">Filtrar por Fecha:</label>
+          <input type="date" id="dateFilter" />
+        </div>
+
+        <div class="list-container">
+          <h3>Tachos en Alerta (Lleno / Alto):</h3>
+          <ul class="urgent-bins-list" id="urgentBinsList">
+            <li class="no-data">No hay tachos en alerta por ahora.</li>
+          </ul>
+        </div>
+
+        <div class="list-container">
+          <h3>Todos los Tachos Activos:</h3>
+          <!-- Corrected class to all-active-bins-list for semantic clarity -->
+          <ul class="all-active-bins-list" id="allActiveBinsList">
+            <li class="no-data">Esperando datos de tachos...</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- charts-section (Order 2 in mobile, Order 1 in desktop) -->
+      <div class="charts-section">
+        <!-- Historial de Nivel de los Tachons (Order 1 in mobile charts-section) -->
+        <div class="chart-card" id="distanceHistoryChartCard">
+          <h2>Historial de Nivel de los Tachons (Últimos Datos)</h2>
+          <div class="chart-canvas-container">
+            <canvas id="distanceHistoryChart"></canvas>
+          </div>
+          <button onclick="resetHistoryChartZoom()">Restaurar Vista</button>
+        </div>
+
+        <!-- Distribución de Tachos por Estado (Order 2 in mobile charts-section) -->
+        <div class="chart-card" id="statusDistributionChartCard">
+          <h2>Distribución de Tachos por Estado</h2>
+          <div class="chart-canvas-container">
+            <canvas id="statusDistributionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Frecuencia de Llenado por Tacho (Order 3 in mobile charts-section) -->
+        <div class="chart-card" id="fillFrequencyChartCard">
+          <h2>Frecuencia de Llenado por Tacho</h2>
+          <div class="chart-canvas-container">
+            <canvas id="fillFrequencyChart"></canvas>
+          </div>
+        </div>
+
+        <p
+          id="noDataChartsMessage"
+          class="no-data-charts"
+          style="display: none"
+        >
+          No hay datos de gráficos para mostrar aún. Esperando información de
+          los tachos...
+        </p>
+      </div>
+    </div>
+
+    <div id="notificationContainer"></div>
+
+    <!-- Scripts de JavaScript -->
+    <script type="module" src="./js/graficos.js"></script>
+    <script type="module" src="./js/notifications.js"></script>
+
+    <!-- Funciones dummy para evitar errores si los archivos JS no están completos aún -->
+    <script>
+      // Si tu graficos.js aún no define estas funciones globalmente
+      // o para pruebas rápidas
+      window.resetHistoryChartZoom =
+        window.resetHistoryChartZoom ||
+        function () {
+          console.log(
+            "Resetting zoom..."
+          ); /* Implementación real en graficos.js */
+        };
+      // Si necesitas una función showNotification básica antes de que notifications.js cargue
+      window.showNotification =
+        window.showNotification ||
+        function (msg, type) {
+          console.log(`Notification (${type}): ${msg}`);
+        };
+    </script>
+  </body>
+</html>

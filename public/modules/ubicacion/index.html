@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlotaBin IA - Ubicaciones</title>
+    <link rel="stylesheet" href="../../styles.css" />
+    <link rel="icon" href="../../images/Robot.png" type="image/x-icon" />
+    <style>
+      /* Estilos generales para el cuerpo */
+      body {
+        background-color: #0c1a28; /* Fondo muy oscuro, ligeramente azulado */
+        color: #e0f2f7; /* Texto blanco azulado suave */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 30px; /* Aumentado para mejor espaciado */
+        box-sizing: border-box;
+        position: relative; /* Necesario para los pseudo-elementos fijos */
+        overflow-x: hidden; /* Evita el scroll horizontal */
+      }
+
+      /* Pseudo-elemento para el fondo animado que cambiará las imágenes y tendrá blur */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover; /* Las imágenes cubren todo el espacio */
+        opacity: 0.3; /* Opacidad reducida para un efecto más sutil */
+        z-index: -1; /* Detrás de todo el contenido */
+        pointer-events: none; /* Asegura que no interfiera con interacciones */
+        filter: blur(5px); /* ¡El efecto BLUR para el fondo! */
+
+        /* Animación para cambiar las imágenes de fondo */
+        animation: changeBackground 45s infinite ease-in-out; /* Duración total del ciclo */
+        transition: background-image 1.5s ease-in-out, opacity 1.5s ease-in-out; /* Transición suave entre imágenes y opacidad */
+      }
+
+      /* Overlay de gradiente adicional para un toque más moderno y cohesivo */
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at top left,
+            rgba(64, 224, 208, 0.08) 0%,
+            transparent 40%
+          ),
+          /* Turquesa/cian suave */
+            radial-gradient(
+              circle at bottom right,
+              rgba(70, 130, 180, 0.08) 0%,
+              transparent 40%
+            ); /* Azul acero suave */
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      /* Keyframes para la animación de cambio de imagen de fondo */
+      @keyframes changeBackground {
+        0% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        15% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        25% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        33% {
+          background-image: url("/images/fondo2.jpg");
+          opacity: 0.3;
+        }
+        48% {
+          background-image: url("/images/fondo2.jpg");
+          opacity: 0.3;
+        }
+        58% {
+          background-image: url("/images/fondo5.jpg");
+          opacity: 0.3;
+        }
+        73% {
+          background-image: url("/images/fondo5.jpg");
+          opacity: 0.3;
+        }
+        83% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+        100% {
+          background-image: url("/images/fondo1.jpg");
+          opacity: 0.3;
+        }
+      }
+
+      /* Encabezado */
+      .ubicacion-header {
+        text-align: center;
+        margin-bottom: 40px; /* Más espacio */
+        width: 90%;
+        max-width: 1000px; /* Consistente con dashboard */
+        background-color: rgba(
+          18,
+          30,
+          48,
+          0.7
+        ); /* Fondo oscuro semitransparente */
+        padding: 35px; /* Más padding */
+        border-radius: 18px; /* Más redondeado */
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* Sombra más suave y profunda */
+        border: 1px solid rgba(40, 60, 80, 0.5); /* Borde sutil */
+        backdrop-filter: blur(8px); /* ¡Más blur para el efecto de vidrio! */
+      }
+
+      .ubicacion-header h1 {
+        font-size: 3.8em; /* Título grande */
+        color: #87ceeb; /* Azul cielo suave */
+        text-shadow: 0 0 8px rgba(135, 206, 235, 0.5),
+          0 0 15px rgba(173, 216, 230, 0.3); /* Sombra suave, menos neón */
+        animation: softGlow 3s ease-in-out infinite alternate; /* Animación de brillo más suave */
+      }
+
+      /* Reutilizar la animación softGlow del dashboard si no está definida globalmente */
+      @keyframes softGlow {
+        from {
+          text-shadow: 0 0 8px rgba(135, 206, 235, 0.5),
+            0 0 15px rgba(173, 216, 230, 0.3);
+        }
+        to {
+          text-shadow: 0 0 12px rgba(135, 206, 235, 0.7),
+            0 0 25px rgba(173, 216, 230, 0.5);
+        }
+      }
+
+      /* Contenedor de búsqueda */
+      .search-container {
+        margin-bottom: 35px; /* Espacio ajustado */
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        width: 90%;
+        max-width: 600px;
+      }
+
+      .search-container input {
+        padding: 16px 25px; /* Más padding */
+        border: 1px solid #4682b4; /* Azul acero, menos neón */
+        border-radius: 10px; /* Más redondeado */
+        background-color: rgba(26, 52, 77, 0.6); /* Más oscuro y transparente */
+        color: #e0f2f7; /* Texto blanco azulado */
+        font-size: 1.15em; /* Ligeramente más grande */
+        flex-grow: 1;
+        box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3); /* Sombra interior suave */
+        transition: all 0.3s ease;
+        backdrop-filter: blur(3px); /* Pequeño blur en el input */
+      }
+
+      .search-container input::placeholder {
+        color: #87ceeb; /* Placeholder más suave */
+        opacity: 0.7;
+      }
+
+      .search-container input:focus {
+        outline: none;
+        border-color: #6a5acd; /* Azul lavanda al enfocar */
+        box-shadow: 0 0 10px rgba(106, 90, 205, 0.5),
+          inset 0 0 8px rgba(106, 90, 205, 0.3);
+        background-color: rgba(
+          26,
+          52,
+          77,
+          0.8
+        ); /* Un poco más opaco al enfocar */
+      }
+
+      /* Grid de tarjetas de ubicación */
+      .ubicacion-grid {
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(350px, 1fr)
+        ); /* Tarjetas un poco más grandes */
+        gap: 35px; /* Más espacio */
+        padding: 25px; /* Más padding */
+        width: 95%;
+        max-width: 1300px; /* Ancho máximo aumentado */
+      }
+
+      /* Tarjeta de ubicación */
+      .ubicacion-card {
+        background-color: rgba(
+          26,
+          52,
+          77,
+          0.7
+        ); /* Menos opaco, más transparente para el blur */
+        border: 1px solid rgba(70, 130, 180, 0.4); /* Borde más suave */
+        border-radius: 20px; /* Más redondeado */
+        padding: 30px; /* Más padding */
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4),
+          0 0 0px rgba(70, 130, 180, 0.2); /* Sombra más sutil y de profundidad */
+        transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out,
+          background-color 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        position: relative; /* Para el efecto de escáner */
+        overflow: hidden; /* Para que el escáner no se desborde */
+        backdrop-filter: blur(10px); /* ¡Más blur para el efecto de vidrio! */
+        border-top: 1px solid rgba(255, 255, 255, 0.1); /* Efecto de brillo superior */
+        border-left: 1px solid rgba(255, 255, 255, 0.1); /* Efecto de brillo izquierdo */
+      }
+
+      /* Efecto de "escáner de ubicación" al hacer hover en la tarjeta */
+      .ubicacion-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(106, 90, 205, 0.15) 20%,
+          /* Azul lavanda suave */ rgba(106, 90, 205, 0.3) 50%,
+          /* Centro más brillante */ rgba(106, 90, 205, 0.15) 80%,
+          transparent 100%
+        );
+        transform: translateY(-100%); /* Comienza por encima de la tarjeta */
+        transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+          opacity 0.8s ease-out; /* Curva de animación más dinámica */
+        opacity: 0; /* Oculto por defecto */
+        z-index: 0;
+        pointer-events: none; /* Asegura que no bloquee interacciones */
+      }
+
+      .ubicacion-card:hover::before {
+        transform: translateY(100%); /* Se desliza hacia abajo */
+        opacity: 1; /* Aparece y se desliza */
+      }
+
+      .ubicacion-card > * {
+        /* Asegura que el contenido esté por encima del pseudo-elemento */
+        position: relative;
+        z-index: 1;
+      }
+
+      .ubicacion-card:hover {
+        transform: translateY(-10px) scale(1.03); /* Mayor elevación y escala */
+        background-color: rgba(
+          30,
+          60,
+          90,
+          0.8
+        ); /* Un poco más oscuro y opaco al hover */
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6),
+          0 0 15px rgba(70, 130, 180, 0.5); /* Sombra más pronunciada */
+      }
+
+      .ubicacion-card h3 {
+        color: #b0e0e6; /* Azul claro suave */
+        font-size: 2em; /* Título un poco más grande */
+        margin-bottom: 15px;
+        text-shadow: 0 0 5px rgba(176, 224, 230, 0.4); /* Sombra de texto suave */
+      }
+
+      .ubicacion-card p {
+        font-size: 1.15em; /* Un poco más grande */
+        margin: 8px 0;
+        color: #e0f2f7;
+      }
+
+      .ubicacion-card .tacho-image-preview {
+        width: 100%;
+        max-width: 220px; /* Imagen un poco más grande */
+        height: 160px;
+        object-fit: cover;
+        border-radius: 10px; /* Más redondeado */
+        border: 1px solid rgba(135, 206, 235, 0.6); /* Borde más suave */
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
+          inset 0 0 10px rgba(0, 0, 0, 0.2); /* Sombra más sutil */
+      }
+
+      .ubicacion-card button {
+        background-color: transparent; /* Fondo transparente */
+        color: #98fb98; /* Verde menta suave */
+        border: 1px solid #66cdaa; /* Borde cian claro */
+        padding: 14px 28px; /* Más padding */
+        border-radius: 10px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.4s ease; /* Transición uniforme */
+        margin-top: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3),
+          inset 0 0 0px rgba(102, 205, 170, 0); /* Sombra sutil, sin brillo inicial */
+        backdrop-filter: blur(5px); /* Blur para el botón también */
+      }
+
+      .ubicacion-card button:hover {
+        background-color: rgba(
+          102,
+          205,
+          170,
+          0.1
+        ); /* Fondo muy sutil al hover */
+        color: #c0fec0; /* Verde menta un poco más claro */
+        transform: translateY(-4px); /* Mayor elevación */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5),
+          inset 0 0 20px rgba(102, 205, 170, 0.4); /* Sombra y brillo interior más fuertes */
+        border-color: #98fb98; /* Borde más visible al hover */
+      }
+
+      /* Mensaje de no encontrado */
+      .no-results-message {
+        font-size: 1.6em;
+        color: #ff8c00; /* Naranja oscuro, menos agresivo */
+        text-align: center;
+        margin-top: 50px;
+        text-shadow: 0 0 6px rgba(255, 140, 0, 0.4); /* Sombra más suave */
+      }
+
+      /* Media Queries para Responsividad (ajusta según necesites) */
+      @media (max-width: 1200px) {
+        .ubicacion-grid {
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 30px;
+        }
+        .ubicacion-header h1 {
+          font-size: 3em;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .ubicacion-header h1 {
+          font-size: 2.5em;
+        }
+        .search-container {
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
+        .ubicacion-grid {
+          grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+          padding: 15px;
+          gap: 25px;
+        }
+        body {
+          padding: 15px;
+        }
+        .ubicacion-card {
+          padding: 20px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .ubicacion-header h1 {
+          font-size: 2em;
+        }
+        .search-container input,
+        .ubicacion-card button {
+          font-size: 1em;
+          padding: 10px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ubicacion-header">
+      <h1>Ubicaciones FlotaBin IA</h1>
+      <div class="search-container">
+        <input
+          type="text"
+          id="ubicacionSearchInput"
+          placeholder="Buscar tacho por nombre..."
+        />
+      </div>
+    </div>
+
+    <div class="ubicacion-grid" id="ubicacionGrid"></div>
+
+    <p class="no-results-message" id="noResultsMessage" style="display: none">
+      No se encontraron tachos que coincidan con tu búsqueda.
+    </p>
+
+    <script type="module" src="./js/ubicacion.js"></script>
+  </body>
+</html>

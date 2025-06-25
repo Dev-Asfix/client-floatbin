@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FloatBin AI - Chat</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link rel="icon" type="image/x-icon" href="/images/floatbin.png" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <canvas id="fluid"></canvas>
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="bot-info">
+          <img src="img/hi-emo.gif" alt="Bot Avatar" class="bot-avatar" />
+          <div class="bot-status">
+            <h2>FloatBin AI</h2>
+            <p id="server-status">Cargando...</p>
+          </div>
+        </div>
+        <div class="header-options">
+          <button class="icon-button" id="toggle-bot-audio">
+            <i class="fas fa-volume-up"></i>
+          </button>
+
+          <button class="icon-button"><i class="fas fa-ellipsis-v"></i></button>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="message bot-message">
+          <img
+            src="img/anime-girl6.gif"
+            alt="Bot Avatar"
+            class="message-avatar"
+          />
+          <div class="message-content">
+            <p>¡Hola! ¿En qué puedo ayudarte hoy?</p>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <button class="icon-button" id="camera-toggle">
+          <i class="fas fa-camera"></i>
+        </button>
+        <input
+          type="text"
+          id="user-input"
+          placeholder="Escribe un mensaje..."
+          autocomplete="off"
+        />
+        <button class="icon-button" id="audio-toggle">
+          <i class="fas fa-microphone"></i>
+        </button>
+        <button class="send-button" id="send-button">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      <div class="audio-recorder hidden" id="audio-recorder">
+        <div class="recording-animation" id="recording-animation">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+        <button class="icon-button hidden" id="cancel-recording">
+          <i class="fas fa-times"></i>
+        </button>
+        <span id="transcription-text"></span>
+      </div>
+
+      <div class="camera-capture-area hidden" id="camera-capture-area">
+        <video id="video-preview" autoplay muted class="video-preview"></video>
+        <canvas id="photo-canvas" class="hidden"></canvas>
+        <div class="camera-controls">
+          <button id="start-camera" class="camera-button">
+            <i class="fas fa-video"></i> Iniciar Cámara
+          </button>
+          <button id="take-photo" class="camera-button hidden">
+            <i class="fas fa-camera-retro"></i> Tomar Foto
+          </button>
+          <button id="start-video-recording" class="camera-button hidden">
+            <i class="fas fa-dot-circle"></i> Grabar Video
+          </button>
+          <button
+            id="stop-video-recording"
+            class="camera-button hidden"
+            disabled
+          >
+            <i class="fas fa-stop"></i> Detener Grabación
+          </button>
+          <button id="send-media" class="camera-button hidden">
+            <i class="fas fa-paper-plane"></i> Enviar
+          </button>
+          <button id="cancel-media" class="camera-button">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+        </div>
+      </div>
+
+      <div class="chat-options hidden">
+        <button class="options-arrow" id="options-left-arrow" disabled>
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="options-wrapper" id="options-wrapper"></div>
+        <button class="options-arrow" id="options-right-arrow" disabled>
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="asset/style-neon.js"></script>
+    <script src="asset/css.js"></script>
+  </body>
+</html>
