@@ -1166,7 +1166,7 @@ body::after {
 @media (max-width: 600px) {
     .chat-container {
         margin: 0;
-        border-radius: 0;
+
         /* Sin bordes redondeados en móviles para ocupar toda la pantalla */
         height: 100vh;
         max-width: 100%;
