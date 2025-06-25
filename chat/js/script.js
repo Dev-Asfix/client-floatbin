@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isBotSpeaking = false;
     let currentUtterance = null; // Para guardar la referencia a la síntesis de voz actual
 
-    const BACKEND_URL = 'http://localhost:3000'; // Asegúrate de que esta URL sea correcta
+    const BACKEND_URL = 'https://server-floatbin.onrender.com'; // Asegúrate de que esta URL sea correcta
 
     // --- Nueva función para detener la voz del bot ---
     function stopBotSpeech() {

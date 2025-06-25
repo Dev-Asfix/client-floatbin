@@ -238,8 +238,8 @@ body::after {
 }
 
 .bot-avatar {
-    width: 45px;
-    height: 45px;
+    width: 65px;
+    height: 55px;
     border-radius: 50%;
     /* Avatar redondo */
     margin-right: 12px;
@@ -247,7 +247,7 @@ body::after {
     /* Asegura que la imagen cubra el área */
 
     /* Borde cian alrededor del avatar */
-    box-shadow: 0 0 0 1px rgba(203, 246, 252, 0.548);
+
     /* Sombra cian exterior para un "halo" */
 }
 
@@ -357,8 +357,8 @@ body::after {
 }
 
 .message-avatar {
-    width: 38px;
-    height: 38px;
+    width: 58px;
+    height: 58px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
