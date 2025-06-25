@@ -304,7 +304,7 @@ const Tools = () => {
       "public/modules/dashboard.html",
       "public/modules/graficos/index.html",
       "public/modules/ubicacion/index.html",
-      "#", // Placeholder para la herramienta 4
+      "public/modules/ubicacion/escaner/index.html", // Placeholder para la herramienta 4
       "#", // Placeholder para la herramienta 5
       "#"  // Placeholder para la herramienta 6
     ];
@@ -331,8 +331,8 @@ const Tools = () => {
       icon: "fa-solid fa-plane",
       id: 4,
       image: "./images/alerta.png",
-      label: "Alertas: Instantáneas",
-      name: "Notificaciones Rápidas"
+      label: "Optimización de Rutas",
+      name: "Escanea tachos en el mapa "
     }, {
       icon: "fa-solid fa-gamepad-modern",
       id: 5,
@@ -375,7 +375,7 @@ const Restaurants = () => {
     return [{
       desc: "Asistente inteligente avanzado",
       id: 1,
-      image: "./images/Chatbot.png",
+      image: "./images/girl.jpg",
       title: "Chatbot IA",
       link: "../chat/index.html",
     }, {
