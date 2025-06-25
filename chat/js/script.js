@@ -6,9 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const audioRecorderDiv = document.getElementById('audio-recorder');
     const serverStatusElement = document.getElementById('server-status');
     const recordingAnimation = document.getElementById('recording-animation');
-    const transcriptionTextElement = document.getElementById('transcription-text'); // Nuevo elemento para la transcripción
-    const toggleBotAudioButton = document.getElementById('toggle-bot-audio'); // Nuevo botón de audio del bot
-    const cancelRecordingButton = document.getElementById('cancel-recording'); // Nuevo botón de cancelar grabación
+    const transcriptionTextElement = document.getElementById('transcription-text');
+    const toggleBotAudioButton = document.getElementById('toggle-bot-audio');
+    const cancelRecordingButton = document.getElementById('cancel-recording');
 
     const chatOptionsContainer = document.querySelector('.chat-options');
     const optionsWrapper = document.getElementById('options-wrapper');
@@ -26,14 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendMediaButton = document.getElementById('send-media');
     const cancelMediaButton = document.getElementById('cancel-media');
 
-
+    // --- Variables para el arrastre (swipe) de opciones ---
     let isDown = false;
     let startX;
     let scrollLeft;
 
+    // --- Eventos de ratón para el arrastre (swipe) de opciones ---
     optionsWrapper.addEventListener('mousedown', (e) => {
         isDown = true;
-        optionsWrapper.classList.add('active-drag'); // Optional: Add a class for visual feedback during drag
+        optionsWrapper.classList.add('active-drag');
         startX = e.pageX - optionsWrapper.offsetLeft;
         scrollLeft = optionsWrapper.scrollLeft;
     });
@@ -49,21 +50,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     optionsWrapper.addEventListener('mousemove', (e) => {
-        if (!isDown) return; // Stop the function from running when not clicked
-        e.preventDefault(); // Prevent text selection and other default behaviors
+        if (!isDown) return;
+        e.preventDefault();
         const x = e.pageX - optionsWrapper.offsetLeft;
-        const walk = (x - startX) * 1.5; // Adjust scroll speed (e.g., 1.5 for faster scroll)
+        const walk = (x - startX) * 1.5;
         optionsWrapper.scrollLeft = scrollLeft - walk;
     });
 
-
-    // --- Funcionalidad táctil para dispositivos móviles ---
+    // --- Funcionalidad táctil para dispositivos móviles (arrastre de opciones) ---
     optionsWrapper.addEventListener('touchstart', (e) => {
         isDown = true;
         optionsWrapper.classList.add('active-drag');
         startX = e.touches[0].pageX - optionsWrapper.offsetLeft;
         scrollLeft = optionsWrapper.scrollLeft;
-    }, { passive: true }); // Use passive: true for better scroll performance on mobile
+    }, { passive: true });
 
     optionsWrapper.addEventListener('touchend', () => {
         isDown = false;
@@ -77,11 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     optionsWrapper.addEventListener('touchmove', (e) => {
         if (!isDown) return;
-        // No e.preventDefault() here if passive: true is used in touchstart
         const x = e.touches[0].pageX - optionsWrapper.offsetLeft;
-        const walk = (x - startX) * 1.5; // Adjust scroll speed
+        const walk = (x - startX) * 1.5;
         optionsWrapper.scrollLeft = scrollLeft - walk;
-    }, { passive: true })
+    }, { passive: true });
+
 
     let conversationContext = [];
     let currentOptions = [];
@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let recognition; // Variable para la API de reconocimiento de voz
     let isRecordingAudio = false; // Estado para saber si el micrófono está activo
+    let lastFinalTranscript = ''; // Almacenará el último transcrito final para un solo envío
     let botAudioEnabled = true; // Estado para el audio del bot
 
     // Variable para controlar si el bot está hablando actualmente
@@ -157,12 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `<div class="map-responsive">${cleanHtml}</div>`;
             });
 
+            // Reemplazo para listas (viñetas y numeradas)
             formattedMessage = formattedMessage.replace(/(^|\n)\*\s+(.*?)(\n|$)/g, '$1<li>$2</li>$3');
             formattedMessage = formattedMessage.replace(/(^|\n)-\s+(.*?)(\n|$)/g, '$1<li>$2</li>$3');
             formattedMessage = formattedMessage.replace(/(^|\n)\d+\.\s+(.*?)(\n|$)/g, '$1<li>$2</li>$3');
 
             if (formattedMessage.includes('<li>')) {
                 formattedMessage = formattedMessage.replace(/((?:<li>.*?<\/li>\s*)+)/gs, (match) => {
+                    // Si el primer elemento de la lista parece numerado, usa <ol>
                     if (match.match(/^\s*\d+\./m)) {
                         return `<ol>${match}</ol>`;
                     }
@@ -175,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
                 .replace(/_(.*?)_/g, '<em>$1</em>')
                 .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\n/g, '<br>');
+                .replace(/\n/g, '<br>'); // Mantener saltos de línea como <br>
 
             tempDiv.innerHTML = formattedMessage;
             messageContentDiv.appendChild(tempDiv);
@@ -387,94 +390,101 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Funcionalidad de reconocimiento de voz (Transcripción en tiempo real) ---
+    // --- Funcionalidad de reconocimiento de voz (Transcripción de una sola vez) ---
 
-    // Inicializar SpeechRecognition
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'es-ES'; // Idioma para el reconocimiento
-        recognition.interimResults = true; // Resultados provisionales mientras se habla
-        recognition.continuous = true; // Reconocimiento continuo
+    // Initial setup of SpeechRecognition (call this once on DOMContentLoaded)
+    function setupSpeechRecognition() {
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES'; // Idioma para el reconocimiento
+            recognition.interimResults = true; // Resultados provisionales mientras se habla
+            // **CRITICAL CHANGE**: Set continuous to false for a single final result per 'start'
+            recognition.continuous = false; // Set to false to get a single, consolidated result when user pauses.
 
-        recognition.onstart = () => {
-            isRecordingAudio = true;
-            recordingAnimation.classList.remove('hidden');
-            transcriptionTextElement.textContent = 'Escuchando...';
-            audioToggleButton.innerHTML = '<i class="fas fa-microphone-slash"></i>'; // Cambia el ícono a micrófono tachado
-            cancelRecordingButton.classList.remove('hidden'); // Muestra el botón de cancelar
-            userInput.value = ''; // Limpia el input de texto
-            userInput.placeholder = 'Habla ahora...';
-            userInput.readOnly = true; // Deshabilita la entrada de texto manual
-            sendButton.disabled = true; // Deshabilita el botón de enviar
-            stopBotSpeech(); // Detener la voz del bot cuando el usuario empieza a grabar
-        };
+            recognition.onstart = () => {
+                isRecordingAudio = true;
+                recordingAnimation.classList.remove('hidden');
+                transcriptionTextElement.textContent = 'Escuchando...';
+                audioToggleButton.innerHTML = '<i class="fas fa-microphone-slash"></i>'; // Cambia el ícono a micrófono tachado
+                cancelRecordingButton.classList.remove('hidden'); // Muestra el botón de cancelar
+                userInput.value = ''; // Limpia el input de texto
+                userInput.placeholder = 'Habla ahora...';
+                userInput.readOnly = true; // Deshabilita la entrada de texto manual
+                sendButton.disabled = true; // Deshabilita el botón de enviar
+                stopBotSpeech(); // Detener la voz del bot cuando el usuario empieza a grabar
+                lastFinalTranscript = ''; // Reset the transcript for a new recording session
+            };
 
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-            let finalTranscript = '';
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let newFinalTranscriptPart = ''; // Capture only the *new* final part from this event
 
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const transcriptPart = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        newFinalTranscriptPart += transcriptPart; // Accumulate only final parts for this event
+                    } else {
+                        interimTranscript += transcriptPart;
+                    }
+                }
+
+                // Update transcription display
+                // If there's a new final part, update lastFinalTranscript and display it.
+                // Otherwise, display the interim transcript.
+                if (newFinalTranscriptPart) {
+                    lastFinalTranscript += newFinalTranscriptPart;
+                    transcriptionTextElement.textContent = lastFinalTranscript + interimTranscript; // Show current final + current interim
                 } else {
-                    interimTranscript += event.results[i][0].transcript;
+                    transcriptionTextElement.textContent = lastFinalTranscript + interimTranscript; // Just show interim if no new final
                 }
-            }
 
-            // Always update the transcription text, whether it's interim or final
-            transcriptionTextElement.textContent = interimTranscript || finalTranscript;
-
-            if (finalTranscript) {
-                // If there's a final result, send it to the bot and stop recognition explicitly.
-                // Stopping it here ensures onend fires and we can control the restart logic.
-                recognition.stop(); // Stop current recognition to process the final message
-                sendMessageToBot(finalTranscript); // Send the transcribed text to the bot
-                // resetAudioInput() will be called by onend if isRecordingAudio is false,
-                // or after the final processing. For now, rely on onend to reset.
-            }
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Error de reconocimiento de voz:', event.error);
-            transcriptionTextElement.textContent = 'Error de audio. Intenta de nuevo.';
-            if (event.error === 'not-allowed' || event.error === 'Permission denied') {
-                alert('Permiso de micrófono denegado. Por favor, habilítalo en la configuración de tu navegador.');
-            }
-            // An error means recognition has stopped. Reset UI.
-            resetAudioInput();
-        };
-
-        recognition.onend = () => {
-            // This `onend` fires when recognition stops for any reason (explicit stop, silence, error).
-            // We want to keep the mic "hot" if the user is still in recording mode
-            // and it wasn't a deliberate stop after a final message or cancel button click.
-            if (isRecordingAudio) {
-                console.log('Reconocimiento terminado (posiblemente por pausa/silencio). Intentando reiniciar...');
-                // Attempt to restart recognition if it ended without a final message being processed
-                // and the user is still intended to be recording.
-                try {
-                    recognition.start();
-                    transcriptionTextElement.textContent = 'Escuchando...'; // Keep the listening message
-                } catch (e) {
-                    console.warn('Error al intentar reiniciar reconocimiento en onend:', e);
-                    // If restarting fails for some reason, ensure UI is reset.
-                    resetAudioInput();
+                // If a final result is present (meaning user paused or stopped sufficiently for the browser to finalize)
+                // and it's not empty, we consider this the end of the user's speech for this session.
+                if (event.results[event.results.length - 1].isFinal) {
+                    // **CRITICAL**: If a final result is received, stop the recognition.
+                    // This ensures onend is called properly and we don't get multiple results.
+                    recognition.stop();
+                    // The onend event will now handle sending the lastFinalTranscript.
                 }
-            } else {
-                // If isRecordingAudio is false, it means the recording was intentionally stopped.
-                resetAudioInput(); // Just ensure the UI is fully reset.
-            }
-        };
+            };
 
-    } else {
-        audioToggleButton.disabled = true;
-        alert('Lo siento, tu navegador no soporta la API de reconocimiento de voz.');
+            recognition.onerror = (event) => {
+                console.error('Error de reconocimiento de voz:', event.error);
+                transcriptionTextElement.textContent = 'Error de audio. Intenta de nuevo.';
+                if (event.error === 'no-speech') {
+                    transcriptionTextElement.textContent = 'No se detectó voz. Por favor, intenta de nuevo.';
+                } else if (event.error === 'not-allowed' || event.error === 'Permission denied') {
+                    alert('Permiso de micrófono denegado. Por favor, habilítalo en la configuración de tu navegador.');
+                }
+                // An error means recognition has stopped. Reset UI.
+                // We don't send anything if there was an error without a final transcript.
+                resetAudioInput();
+            };
+
+            recognition.onend = () => {
+                console.log('Reconocimiento de voz finalizado.');
+                // Only send the message if there was a final transcript recorded AND recording was active
+                // The isRecordingAudio check here prevents sending if the user explicitly cancelled.
+                if (lastFinalTranscript.trim() !== '' && isRecordingAudio) {
+                    sendMessageToBot(lastFinalTranscript.trim());
+                } else if (isRecordingAudio) { // If recording was active but no transcript, inform user
+                    transcriptionTextElement.textContent = 'No se detectó voz.';
+                }
+                resetAudioInput(); // Always reset UI when recognition truly ends
+            };
+
+        } else {
+            audioToggleButton.disabled = true;
+            alert('Lo siento, tu navegador no soporta la API de reconocimiento de voz.');
+        }
     }
+
+    setupSpeechRecognition(); // Call once to set up the recognition object
 
     // Función para activar/desactivar la grabación de audio
     audioToggleButton.addEventListener('click', () => {
         if (isRecordingAudio) {
-            stopAudioRecording(); // This will explicitly stop recognition and trigger onend
+            stopAudioRecording(); // Esto detendrá explícitamente el reconocimiento y activará onend
         } else {
             startAudioRecording();
         }
@@ -484,12 +494,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function startAudioRecording() {
         if (recognition) {
             audioRecorderDiv.classList.remove('hidden');
-            cancelRecordingButton.classList.remove('hidden'); // Mostrar botón de cancelar
-            userInput.classList.add('hidden'); // Ocultar input normal
-            sendButton.classList.add('hidden'); // Ocultar botón de enviar normal
-            cameraCaptureArea.classList.add('hidden'); // Asegurarse de que la cámara esté oculta
-            stopCamera(); // Detener la cámara si está activa
-            resetCameraUI(); // Resetear la UI de la cámara
+            cancelRecordingButton.classList.remove('hidden');
+            userInput.classList.add('hidden');
+            sendButton.classList.add('hidden');
+            cameraCaptureArea.classList.add('hidden');
+            stopCamera();
+            resetCameraUI();
+
+            // IMPORTANTE: Llamar `abort()` antes de `start()` para limpiar cualquier estado anterior
+            // y asegurar un inicio fresco, especialmente después de errores o cancelaciones.
+            recognition.abort(); // Asegura que la sesión anterior esté realmente detenida.
+
             recognition.start();
             stopBotSpeech(); // Asegurar que el bot no hable al iniciar grabación
         }
@@ -498,35 +513,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para detener la grabación de audio (reconocimiento de voz)
     function stopAudioRecording() {
         if (recognition && isRecordingAudio) {
-            recognition.stop(); // Explicitly stop recognition. This will trigger onend.
-            // onend will handle the resetAudioInput() based on the isRecordingAudio state.
+            isRecordingAudio = false; // Establecer esto ANTES de detener el reconocimiento
+            // para que onend sepa que fue una detención iniciada por el usuario.
+            recognition.stop(); // Detener explícitamente el reconocimiento. Esto activará onend.
         }
-        // If it was already not recording, calling this does nothing significant beyond ensuring UI reset.
-        // We'll let onend handle the definitive UI reset when recognition actually stops.
     }
 
     // Función para resetear la interfaz de usuario del input de audio
     function resetAudioInput() {
-        isRecordingAudio = false; // Important: Set this to false when recording is truly over or cancelled
+        isRecordingAudio = false; // Importante: Establecer esto en falso cuando la grabación ha terminado o se canceló
         recordingAnimation.classList.add('hidden');
         transcriptionTextElement.textContent = '';
         audioRecorderDiv.classList.add('hidden');
-        userInput.classList.remove('hidden'); // Mostrar input normal
-        sendButton.classList.remove('hidden'); // Mostrar botón de enviar normal
-        cancelRecordingButton.classList.add('hidden'); // Ocultar botón de cancelar
-        audioToggleButton.innerHTML = '<i class="fas fa-microphone"></i>'; // Restaurar ícono de micrófono
+        userInput.classList.remove('hidden');
+        sendButton.classList.remove('hidden');
+        cancelRecordingButton.classList.add('hidden');
+        audioToggleButton.innerHTML = '<i class="fas fa-microphone"></i>';
         userInput.placeholder = 'Escribe un mensaje...';
-        userInput.readOnly = false; // Habilitar la entrada de texto manual
-        sendButton.disabled = false; // Habilitar el botón de enviar
+        userInput.readOnly = false;
+        sendButton.disabled = false;
+        lastFinalTranscript = ''; // Limpiar el transcript acumulado al resetear
     }
 
     // Manejar el botón de cancelar grabación
     cancelRecordingButton.addEventListener('click', () => {
-        // When cancelled by user, explicitly stop recognition and force a full UI reset.
+        // Cuando se cancela por el usuario, detener explícitamente el reconocimiento y forzar un reinicio completo de la UI.
         if (recognition && isRecordingAudio) {
-            recognition.stop(); // This will trigger onend
+            recognition.abort(); // Abortar es mejor para la cancelación inmediata sin enviar
+            // ya que evita que onend intente enviar un resultado parcial.
         }
-        resetAudioInput(); // Force a reset immediately
+        resetAudioInput(); // Forzar un reinicio inmediatamente
     });
 
 
@@ -543,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Funcionalidad de la cámara (sin cambios significativos en esta sección) ---
+    // --- Funcionalidad de la cámara ---
 
     cameraToggleButton.addEventListener('click', () => {
         cameraCaptureArea.classList.toggle('hidden');
@@ -601,12 +617,12 @@ document.addEventListener('DOMContentLoaded', () => {
         takePhotoButton.classList.add('hidden');
         startVideoRecordingButton.classList.add('hidden');
         stopVideoRecordingButton.classList.add('hidden');
-        cancelMediaButton.classList.remove('hidden'); // Asegúrate de que este botón sea visible para cancelar cámara
+        cancelMediaButton.classList.remove('hidden');
         capturedMediaBlob = null;
         videoChunks = [];
         sendMediaButton.textContent = 'Enviar';
-        takePhotoButton.disabled = false; // Habilitar después de un reinicio
-        startVideoRecordingButton.disabled = false; // Habilitar después de un reinicio
+        takePhotoButton.disabled = false;
+        startVideoRecordingButton.disabled = false;
     }
 
     takePhotoButton.addEventListener('click', () => {
@@ -618,89 +634,126 @@ document.addEventListener('DOMContentLoaded', () => {
 
         videoPreview.classList.add('hidden');
         photoCanvas.classList.remove('hidden');
-        sendMediaButton.classList.remove('hidden');
-        sendMediaButton.textContent = 'Enviar Foto';
+        sendMediaButton.classList.remove('hidden'); // Mostrar el botón de enviar
+        startVideoRecordingButton.classList.add('hidden'); // Ocultar grabar video
+        takePhotoButton.classList.add('hidden'); // Ocultar tomar foto
+        stopVideoRecordingButton.classList.add('hidden'); // Ocultar detener grabación
+        cancelMediaButton.classList.remove('hidden'); // Asegurarse de que el botón de cancelar esté visible
+
         photoCanvas.toBlob((blob) => {
             capturedMediaBlob = blob;
+            sendMediaButton.textContent = 'Enviar Foto';
         }, 'image/png');
-
-        takePhotoButton.disabled = true;
-        startVideoRecordingButton.disabled = true;
     });
 
-    startVideoRecordingButton.addEventListener('click', () => {
+    startVideoRecordingButton.addEventListener('click', async () => {
         stopBotSpeech(); // Detener la voz del bot al iniciar grabación de video
-        videoChunks = [];
-        mediaRecorderVideo = new MediaRecorder(cameraStream, { mimeType: 'video/webm' });
+        if (!cameraStream) {
+            alert('Por favor, inicia la cámara primero.');
+            return;
+        }
 
-        mediaRecorderVideo.ondataavailable = (event) => {
-            if (event.data.size > 0) {
+        try {
+            mediaRecorderVideo = new MediaRecorder(cameraStream);
+            videoChunks = [];
+
+            mediaRecorderVideo.ondataavailable = (event) => {
                 videoChunks.push(event.data);
-            }
-        };
+            };
 
-        mediaRecorderVideo.onstop = () => {
-            capturedMediaBlob = new Blob(videoChunks, { type: 'video/webm' });
-            const videoURL = URL.createObjectURL(capturedMediaBlob);
-            videoPreview.src = videoURL;
-            videoPreview.controls = true;
-            videoPreview.play();
+            mediaRecorderVideo.onstop = () => {
+                capturedMediaBlob = new Blob(videoChunks, { type: 'video/webm' });
+                videoPreview.srcObject = null; // Detener la vista previa en vivo
+                videoPreview.src = URL.createObjectURL(capturedMediaBlob); // Mostrar el video grabado
+                videoPreview.controls = true;
+                videoPreview.loop = true;
+                videoPreview.play();
 
-            sendMediaButton.classList.remove('hidden');
-            sendMediaButton.textContent = 'Enviar Video';
+                sendMediaButton.textContent = 'Enviar Video';
+                sendMediaButton.classList.remove('hidden');
+                startVideoRecordingButton.classList.add('hidden');
+                stopVideoRecordingButton.classList.add('hidden');
+                takePhotoButton.classList.add('hidden'); // Ocultar tomar foto
+                cancelMediaButton.classList.remove('hidden'); // Asegurarse de que el botón de cancelar esté visible
+            };
 
-            takePhotoButton.disabled = true;
-            startVideoRecordingButton.disabled = true;
-        };
-
-        mediaRecorderVideo.start();
-        startVideoRecordingButton.classList.add('hidden');
-        stopVideoRecordingButton.classList.remove('hidden');
-        takePhotoButton.disabled = true;
+            mediaRecorderVideo.start();
+            startVideoRecordingButton.classList.add('hidden');
+            takePhotoButton.classList.add('hidden'); // Ocultar botón de tomar foto
+            stopVideoRecordingButton.classList.remove('hidden');
+            stopVideoRecordingButton.disabled = false;
+            sendMediaButton.classList.add('hidden'); // Ocultar el botón de enviar hasta que se grabe
+            cancelMediaButton.classList.remove('hidden'); // Asegurarse de que el botón de cancelar esté visible
+            console.log('Grabación de video iniciada.');
+        } catch (err) {
+            console.error('Error al iniciar la grabación de video:', err);
+            alert('No se pudo iniciar la grabación de video.');
+        }
     });
 
     stopVideoRecordingButton.addEventListener('click', () => {
-        stopBotSpeech(); // Detener la voz del bot al detener grabación de video
         if (mediaRecorderVideo && mediaRecorderVideo.state === 'recording') {
             mediaRecorderVideo.stop();
-            stopVideoRecordingButton.classList.add('hidden');
-            startVideoRecordingButton.classList.remove('hidden');
-            takePhotoButton.disabled = false;
+            console.log('Grabación de video detenida.');
+            stopVideoRecordingButton.disabled = true;
         }
     });
 
     sendMediaButton.addEventListener('click', async () => {
         if (capturedMediaBlob) {
-            const type = capturedMediaBlob.type.startsWith('image') ? 'image' : 'video';
-            addMessage(URL.createObjectURL(capturedMediaBlob), type);
+            const formData = new FormData();
+            formData.append('media', capturedMediaBlob);
+            formData.append('type', capturedMediaBlob.type.startsWith('image') ? 'image' : 'video');
 
-            // En un escenario real, enviarías `capturedMediaBlob` al backend aquí
-            // Por ahora, simula una respuesta del bot
-            setTimeout(() => {
-                addMessage('Contenido multimedia enviado. Actualmente, solo proceso texto. ¡Gracias por compartir!', 'bot');
-            }, 1000);
+            addMessage(`Enviando ${capturedMediaBlob.type.startsWith('image') ? 'imagen' : 'video'}...`, 'user'); // Mensaje de feedback
 
-            stopCamera();
-            cameraCaptureArea.classList.add('hidden');
-            userInput.classList.remove('hidden');
-            sendButton.classList.remove('hidden');
-            audioToggleButton.classList.remove('hidden');
-            resetCameraUI();
-        } else {
-            alert('No hay contenido para enviar.');
+            try {
+                // Simulación de envío al backend (adapta esto a tu API real)
+                console.log('Simulando envío de medios al backend...');
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Simula un retraso
+
+                // Añadir el mensaje visualmente como una burbuja de chat
+                if (capturedMediaBlob.type.startsWith('image')) {
+                    addMessage(URL.createObjectURL(capturedMediaBlob), 'image');
+                } else {
+                    addMessage(URL.createObjectURL(capturedMediaBlob), 'video');
+                }
+
+                // Aquí deberías hacer la llamada fetch real al backend
+                // const response = await fetch(`${BACKEND_URL}/api/upload-media`, {
+                //     method: 'POST',
+                //     body: formData,
+                // });
+                // if (!response.ok) {
+                //     throw new Error('Fallo al subir el medio.');
+                // }
+                // const data = await response.json();
+                // addMessage(data.response || 'Medio recibido.', 'bot'); // Mensaje de confirmación del bot
+
+            } catch (error) {
+                console.error('Error al enviar el medio:', error);
+                addMessage('Lo siento, hubo un error al enviar el medio.', 'bot');
+            } finally {
+                stopCamera();
+                resetCameraUI();
+                cameraCaptureArea.classList.add('hidden');
+                userInput.classList.remove('hidden');
+                sendButton.classList.remove('hidden');
+                audioToggleButton.classList.remove('hidden');
+            }
         }
     });
 
     cancelMediaButton.addEventListener('click', () => {
-        stopBotSpeech(); // Detener la voz del bot al cancelar medios
         stopCamera();
+        resetCameraUI();
         cameraCaptureArea.classList.add('hidden');
         userInput.classList.remove('hidden');
         sendButton.classList.remove('hidden');
         audioToggleButton.classList.remove('hidden');
-        resetCameraUI();
     });
 
+    // Iniciar verificación de estado del servidor al cargar la página
     checkServerStatus();
-    setInterval(checkServerStatus, 30000);
+    setInterval(checkServerStatus, 30000); // Verificar cada 30 segundos
 });
