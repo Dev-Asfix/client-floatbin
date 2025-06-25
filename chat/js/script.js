@@ -26,6 +26,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendMediaButton = document.getElementById('send-media');
     const cancelMediaButton = document.getElementById('cancel-media');
 
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    optionsWrapper.addEventListener('mousedown', (e) => {
+        isDown = true;
+        optionsWrapper.classList.add('active-drag'); // Optional: Add a class for visual feedback during drag
+        startX = e.pageX - optionsWrapper.offsetLeft;
+        scrollLeft = optionsWrapper.scrollLeft;
+    });
+
+    optionsWrapper.addEventListener('mouseleave', () => {
+        isDown = false;
+        optionsWrapper.classList.remove('active-drag');
+    });
+
+    optionsWrapper.addEventListener('mouseup', () => {
+        isDown = false;
+        optionsWrapper.classList.remove('active-drag');
+    });
+
+    optionsWrapper.addEventListener('mousemove', (e) => {
+        if (!isDown) return; // Stop the function from running when not clicked
+        e.preventDefault(); // Prevent text selection and other default behaviors
+        const x = e.pageX - optionsWrapper.offsetLeft;
+        const walk = (x - startX) * 1.5; // Adjust scroll speed (e.g., 1.5 for faster scroll)
+        optionsWrapper.scrollLeft = scrollLeft - walk;
+    });
+
+
+    // --- Funcionalidad táctil para dispositivos móviles ---
+    optionsWrapper.addEventListener('touchstart', (e) => {
+        isDown = true;
+        optionsWrapper.classList.add('active-drag');
+        startX = e.touches[0].pageX - optionsWrapper.offsetLeft;
+        scrollLeft = optionsWrapper.scrollLeft;
+    }, { passive: true }); // Use passive: true for better scroll performance on mobile
+
+    optionsWrapper.addEventListener('touchend', () => {
+        isDown = false;
+        optionsWrapper.classList.remove('active-drag');
+    });
+
+    optionsWrapper.addEventListener('touchcancel', () => {
+        isDown = false;
+        optionsWrapper.classList.remove('active-drag');
+    });
+
+    optionsWrapper.addEventListener('touchmove', (e) => {
+        if (!isDown) return;
+        // No e.preventDefault() here if passive: true is used in touchstart
+        const x = e.touches[0].pageX - optionsWrapper.offsetLeft;
+        const walk = (x - startX) * 1.5; // Adjust scroll speed
+        optionsWrapper.scrollLeft = scrollLeft - walk;
+    }, { passive: true })
+
     let conversationContext = [];
     let currentOptions = [];
     let currentOptionPageIndex = 0;
@@ -364,14 +421,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            transcriptionTextElement.textContent = interimTranscript; // Muestra la transcripción en tiempo real
+            // Always update the transcription text, whether it's interim or final
+            transcriptionTextElement.textContent = interimTranscript || finalTranscript;
 
             if (finalTranscript) {
-                // Si hay un resultado final, se envía al bot y se reinicia el reconocimiento
-                transcriptionTextElement.textContent = finalTranscript; // Asegurarse de mostrar el resultado final
-                recognition.stop(); // Detener el reconocimiento actual para procesar el mensaje
-                sendMessageToBot(finalTranscript); // Enviar el texto transcrito al bot
-                resetAudioInput(); // Resetear la UI del audio después de enviar
+                // If there's a final result, send it to the bot and stop recognition explicitly.
+                // Stopping it here ensures onend fires and we can control the restart logic.
+                recognition.stop(); // Stop current recognition to process the final message
+                sendMessageToBot(finalTranscript); // Send the transcribed text to the bot
+                // resetAudioInput() will be called by onend if isRecordingAudio is false,
+                // or after the final processing. For now, rely on onend to reset.
             }
         };
 
@@ -381,32 +440,30 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.error === 'not-allowed' || event.error === 'Permission denied') {
                 alert('Permiso de micrófono denegado. Por favor, habilítalo en la configuración de tu navegador.');
             }
+            // An error means recognition has stopped. Reset UI.
             resetAudioInput();
         };
 
         recognition.onend = () => {
-            // Este `onend` se dispara cuando el reconocimiento se detiene, ya sea por `recognition.stop()`
-            // o por inactividad/silencio. Queremos que solo se reinicie si el usuario sigue en modo de grabación
-            // y no se ha enviado un mensaje final.
-            if (isRecordingAudio && transcriptionTextElement.textContent === 'Escuchando...') {
-                console.log('Reconocimiento terminado por silencio o inactividad, intentando reiniciar...');
-                // Intenta reiniciar solo si sigue en "Escuchando..." y no hay un mensaje final.
-                // Esto ayuda a manejar pausas largas pero permite el reinicio.
-                // Sin embargo, para la interrupción de la voz del bot, la clave es `stopBotSpeech()`.
-                // No necesitamos `recognition.start()` aquí, ya que el ciclo se maneja cuando se presiona el botón.
-                // La idea es que `onresult` con `isFinal` o `cancelRecordingButton` detengan y resetee.
-                // Si llega aquí por silencio, el `resetAudioInput` lo limpiará.
-            } else if (isRecordingAudio && transcriptionTextElement.textContent.trim() !== '' && !transcriptionTextElement.textContent.startsWith('Error') && !window.speechSynthesis.speaking) {
-                // Si el reconocimiento terminó, hay texto, no es un error, y el bot no está hablando (aún),
-                // esto podría ser un caso donde se necesita enviar el mensaje final.
-                // La lógica actual ya lo envía en `onresult` para `isFinal`.
-                // Si no hay `isFinal` y `onend` se dispara, lo que haya en `transcriptionTextElement` se podría enviar.
-                // Esto podría llevar a mensajes parciales si el usuario está en una pausa larga.
-                // Por simplicidad y para evitar envíos no deseados, nos basaremos principalmente en `isFinal`.
-                // Si el usuario quiere enviar lo que lleva, debería presionar Enter o el botón.
+            // This `onend` fires when recognition stops for any reason (explicit stop, silence, error).
+            // We want to keep the mic "hot" if the user is still in recording mode
+            // and it wasn't a deliberate stop after a final message or cancel button click.
+            if (isRecordingAudio) {
+                console.log('Reconocimiento terminado (posiblemente por pausa/silencio). Intentando reiniciar...');
+                // Attempt to restart recognition if it ended without a final message being processed
+                // and the user is still intended to be recording.
+                try {
+                    recognition.start();
+                    transcriptionTextElement.textContent = 'Escuchando...'; // Keep the listening message
+                } catch (e) {
+                    console.warn('Error al intentar reiniciar reconocimiento en onend:', e);
+                    // If restarting fails for some reason, ensure UI is reset.
+                    resetAudioInput();
+                }
+            } else {
+                // If isRecordingAudio is false, it means the recording was intentionally stopped.
+                resetAudioInput(); // Just ensure the UI is fully reset.
             }
-            // Asegurarse de resetear si el reconocimiento finaliza por cualquier razón
-            resetAudioInput(); // Esto se encarga de la UI y los estados.
         };
 
     } else {
@@ -417,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para activar/desactivar la grabación de audio
     audioToggleButton.addEventListener('click', () => {
         if (isRecordingAudio) {
-            stopAudioRecording();
+            stopAudioRecording(); // This will explicitly stop recognition and trigger onend
         } else {
             startAudioRecording();
         }
@@ -440,17 +497,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función para detener la grabación de audio (reconocimiento de voz)
     function stopAudioRecording() {
-        if (recognition && isRecordingAudio) { // Asegúrate de que solo intentas detener si está activo
-            recognition.stop(); // Esto disparará `onend`
+        if (recognition && isRecordingAudio) {
+            recognition.stop(); // Explicitly stop recognition. This will trigger onend.
+            // onend will handle the resetAudioInput() based on the isRecordingAudio state.
         }
-        // resetAudioInput() se llama dentro de `onend` o aquí si la detención es manual
-        // para asegurar que la UI se actualice correctamente.
-        resetAudioInput();
+        // If it was already not recording, calling this does nothing significant beyond ensuring UI reset.
+        // We'll let onend handle the definitive UI reset when recognition actually stops.
     }
 
     // Función para resetear la interfaz de usuario del input de audio
     function resetAudioInput() {
-        isRecordingAudio = false;
+        isRecordingAudio = false; // Important: Set this to false when recording is truly over or cancelled
         recordingAnimation.classList.add('hidden');
         transcriptionTextElement.textContent = '';
         audioRecorderDiv.classList.add('hidden');
@@ -465,7 +522,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Manejar el botón de cancelar grabación
     cancelRecordingButton.addEventListener('click', () => {
-        stopAudioRecording(); // Detiene el reconocimiento de voz y resetea la UI
+        // When cancelled by user, explicitly stop recognition and force a full UI reset.
+        if (recognition && isRecordingAudio) {
+            recognition.stop(); // This will trigger onend
+        }
+        resetAudioInput(); // Force a reset immediately
     });
 
 

@@ -919,6 +919,13 @@ body::after {
     transform: none;
 }
 
+.options-wrapper.active-drag {
+    cursor: grabbing;
+    /* Show a grabbing cursor when dragging */
+    user-select: none;
+    /* Prevent text selection while dragging */
+}
+
 /*
  * ----------------------------------------------------
  * 8. ESTILOS PARA MARKDOWN Y CONTENIDO ADICIONAL
